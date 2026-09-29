@@ -378,3 +378,20 @@ img { max-width: 100%; display: block; }
 
 /* Узкий скриншот (карточка CRM) не растягиваем — иначе размывается. */
 .shot--narrow { max-width: 420px; margin-inline: auto; }
+
+/* ---------- тарифы платформы ---------- */
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 14px; }
+.plan { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow-soft); }
+.plan__limit { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 4px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.plan__price { font-size: 25px; font-weight: 700; letter-spacing: -.02em; margin-top: 12px; }
+.plan__price span { font-size: 14px; font-weight: 400; color: var(--dim); }
+.plan__per { font-size: 13.5px; color: var(--dim); margin-top: 2px; }
+.plan__who { font-size: 14px; color: var(--dim); margin-top: 10px; line-height: 1.4; }
+.switch { display: inline-flex; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; }
+.switch button { font: inherit; font-size: 14.5px; font-weight: 600; border: 0; cursor: pointer; padding: 8px 18px; border-radius: 999px; background: transparent; color: var(--dim); }
+.switch button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.price-note { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 22px; }
+.price-note div { padding-top: 14px; border-top: 1px solid var(--line); }
+.price-note b { display: block; font-size: 16.5px; margin-bottom: 3px; }
+.price-note span { font-size: 14.5px; color: var(--dim); }
+@media (max-width: 760px) { .price-note { grid-template-columns: 1fr; } }

@@ -57,6 +57,18 @@ const PRICES = [
   { n: 'Настройка CRM', d: 'воронка, поля, интеграции — один раз', p: '20 000 ₽' },
 ];
 
+/** Тарифы платформы: предел партнёров, цена в месяц, для кого. */
+const PRM_PLANS = [
+  { limit: 5,   price: 3900,  who: 'Первая партнёрская программа' },
+  { limit: 15,  price: 6900,  who: 'Рабочая программа + CRM' },
+  { limit: 30,  price: 9900,  who: 'Разные условия по услугам' },
+  { limit: 60,  price: 14900, who: 'Сеть приводит клиентов регулярно' },
+  { limit: 120, price: 21900, who: 'Крупная сеть, выгрузки' },
+  { limit: 300, price: 34900, who: 'Дилерская или агентская сеть' },
+];
+const PRM_SETUP = 10000;      // подключение, разово
+const PRM_YEAR_OFF = 20;      // скидка за год, %
+
 /** Цены по отделу продаж. */
 const SALES_PRICES = [
   { n: 'Мини-аудит отдела продаж', d: 'вводный разбор с рекомендациями и файлом-отчётом', p: 'бесплатно' },
@@ -163,6 +175,25 @@ function buildList(sel, items, tpl) {
   if (box) box.innerHTML = items.map(tpl).join('');
 }
 
+/* Тарифы платформы: карточки и переключатель периода оплаты. */
+let prmYear = false;
+function buildPlans() {
+  const box = $('#plans');
+  if (!box) return;
+  const money = (n) => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₽';
+  box.innerHTML = PRM_PLANS.map((p) => {
+    const month = prmYear ? Math.round(p.price * (100 - PRM_YEAR_OFF) / 100) : p.price;
+    return `<div class="plan">
+      <div class="plan__limit">до ${p.limit} ${p.limit === 5 ? 'партнёров' : 'партнёров'}</div>
+      <div class="plan__price">${money(month)}<span>/мес</span></div>
+      <div class="plan__per">${Math.round(month / p.limit)} ₽ за партнёра${prmYear ? ' · при оплате за год' : ''}</div>
+      <div class="plan__who">${esc(p.who)}</div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('[data-period]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.period === 'year') === prmYear)));
+}
+function setPeriod(year) { prmYear = year; buildPlans(); }
+
 /* Появление блоков при прокрутке. */
 function watchRise() {
   const io = new IntersectionObserver((rows) => {
@@ -220,6 +251,7 @@ const hdr = $('#head'); if (hdr) hdr.innerHTML = header();
 const ftr = $('#foot'); if (ftr) ftr.innerHTML = footer();
 buildMarquee();
 buildList('#channels', CHANNELS, (c) => `<div class="card rise"><h3>${esc(c.n)}</h3><p class="mt-s">${esc(c.d)}</p></div>`);
+buildPlans();
 buildList('#sales-prices', SALES_PRICES, (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`);
 buildList('#prices-list', PRICES, (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`);
 applyContacts();

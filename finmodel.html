@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Финмодель «Один Поток» — тарифы и экономика</title>
+<style>
+  :root {
+    --accent: #6356c8; --accent-soft: #efedfa; --ink: #15122a; --dim: #6b6785;
+    --line: #e7e4f2; --paper: #f7f6fb; --ok: #17794f; --ok-bg: #e8f6ef; --bad: #b3123c; --bad-bg: #fdeaf0;
+  }
+  * { box-sizing: border-box; scrollbar-width: none; }
+  *::-webkit-scrollbar { width: 0; height: 0; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 34px 0 70px; }
+  h1 { font-size: 34px; letter-spacing: -.02em; margin: 0 0 6px; }
+  h2 { font-size: 22px; letter-spacing: -.01em; margin: 34px 0 12px; }
+  h3 { font-size: 17px; margin: 0 0 10px; }
+  p { margin: 0 0 10px; }
+  .dim { color: var(--dim); font-size: 14.5px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; box-shadow: 0 6px 22px rgba(21,18,42,.06); }
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); }
+  .grid--plans { grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
+  .grid--plans .card { padding: 16px 16px 18px; }
+  .grid--mix { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 5px; }
+  input[type=number], input[type=text] { width: 100%; font: inherit; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+  input:focus { outline: none; border-color: var(--accent); }
+  .row { display: grid; grid-template-columns: 1fr 96px; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .row span { font-size: 14.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); font-weight: 600; }
+  tr.total td { font-weight: 700; background: var(--accent-soft); }
+  .kpi { display: grid; gap: 4px; }
+  .kpi b { font-size: 26px; letter-spacing: -.02em; }
+  .kpi span { font-size: 13px; color: var(--dim); }
+  .good { color: var(--ok); } .bad { color: var(--bad); } .acc { color: var(--accent); }
+  .pill { display: inline-block; font-size: 12.5px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .note { font-size: 13.5px; color: var(--dim); margin-top: 10px; }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 140px; margin-top: 14px; }
+  .bar { flex: 1; background: linear-gradient(180deg, #8a7fe0, #6356c8); border-radius: 6px 6px 0 0; position: relative; min-height: 2px; }
+  .bar span { position: absolute; bottom: -20px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--dim); }
+  @media (max-width: 900px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Финмодель «Один Поток»</h1>
+<p class="dim">Тарифы, себестоимость и экономика продукта. Меняйте любые цифры — расчёт пересчитывается сразу.
+  Значения по умолчанию — это предположения, а не факты: замените их своими, когда появятся реальные данные.</p>
+
+<h2>1. Тарифы</h2>
+<div class="grid grid--plans" id="plans"></div>
+<p class="note">Платит компания-владелец программы, партнёры пользуются бесплатно. Граница тарифа — число активных партнёров:
+  именно оно растит и нагрузку, и ценность. Все клиенты работают на нашем сервере — отдельных установок нет, поэтому поддержка
+  и обновления стоят одинаково для всех. Больше 300 партнёров — считаем индивидуально. Годовая оплата со скидкой 20% (два месяца в подарок).</p>
+
+<h2>2. Сколько клиентов на каждом тарифе</h2>
+<div class="card">
+  <div class="grid grid--mix" id="mix"></div>
+  <div class="grid g4" style="margin-top:18px">
+    <div><label>Подключений в месяц (разовая оплата)</label><input type="number" id="setups" value="3" /></div>
+    <div><label>Цена подключения, ₽</label><input type="number" id="setupPrice" value="10000" /></div>
+    <div><label>Отток в месяц, %</label><input type="number" id="churn" value="4" step="0.5" /></div>
+    <div><label>Новых клиентов в месяц</label><input type="number" id="newPerMonth" value="4" /></div>
+  </div>
+</div>
+
+<h2>3. Расходы</h2>
+<div class="card">
+  <div class="grid g3">
+    <div>
+      <h3>Постоянные, ₽/мес</h3>
+      <div class="row"><span>Серверы и домены</span><input type="number" id="cInfra" value="6000" /></div>
+      <div class="row"><span>Сервисы (почта, SMS, мониторинг)</span><input type="number" id="cServices" value="4000" /></div>
+      <div class="row"><span>Бухгалтерия и банк</span><input type="number" id="cAccount" value="5000" /></div>
+      <div class="row"><span>Зарплаты (поддержка, разработка)</span><input type="number" id="cTeam" value="0" /></div>
+    </div>
+    <div>
+      <h3>На одного клиента, ₽/мес</h3>
+      <div class="row"><span>Инфраструктура на клиента</span><input type="number" id="cPerInfra" value="120" /></div>
+      <div class="row"><span>Поддержка: часов в месяц</span><input type="number" id="hSupport" value="0.5" step="0.1" /></div>
+      <div class="row"><span>Стоимость часа, ₽</span><input type="number" id="hourCost" value="1200" /></div>
+      <div class="row"><span>Эквайринг и комиссии, %</span><input type="number" id="fee" value="3" step="0.5" /></div>
+    </div>
+    <div>
+      <h3>Привлечение</h3>
+      <div class="row"><span>Бюджет на маркетинг, ₽/мес</span><input type="number" id="cMarketing" value="30000" /></div>
+      <div class="row"><span>Часов на одно внедрение</span><input type="number" id="hSetup" value="6" step="0.5" /></div>
+      <div class="row"><span>Доля клиентов из агентства, %</span><input type="number" id="crossShare" value="50" step="5" /></div>
+      <p class="note">Клиенты из своего агентства достаются почти бесплатно — это главное преимущество перед чистым SaaS.</p>
+    </div>
+  </div>
+</div>
+
+<h2>4. Что получается сейчас</h2>
+<div class="grid g4" id="kpis"></div>
+
+<h2>5. Год вперёд</h2>
+<div class="card">
+  <div id="chart" class="bars"></div>
+  <div style="margin-top:34px;overflow:auto">
+    <table id="plan"></table>
+  </div>
+  <p class="note" id="payback"></p>
+</div>
+
+<h2>6. Проверка на реальность</h2>
+<div class="card" id="sanity"></div>
+
+</div>
+
+<script>
+/* Тарифы: имя, цена в месяц, предел партнёров, что входит. */
+const PLANS = [
+  { key: 'p5',   name: 'До 5',   price: 3900,  limit: 5,   what: 'Первая партнёрская программа: кабинеты, условия, начисления, выплаты.' },
+  { key: 'p15',  name: 'До 15',  price: 6900,  limit: 15,  what: 'Рабочая программа + интеграция с amoCRM или Битрикс24.' },
+  { key: 'p30',  name: 'До 30',  price: 9900,  limit: 30,  what: 'Разные условия по услугам и партнёрам, несколько направлений.' },
+  { key: 'p60',  name: 'До 60',  price: 14900, limit: 60,  what: 'Сеть приводит клиентов регулярно, нужен порядок в выплатах.' },
+  { key: 'p120', name: 'До 120', price: 21900, limit: 120, what: 'Крупная сеть: выгрузки, приоритетная поддержка.' },
+  { key: 'p300', name: 'До 300', price: 34900, limit: 300, what: 'Дилерская или агентская сеть. Больше 300 — считаем отдельно.' },
+];
+const START = { p5: 5, p15: 8, p30: 5, p60: 3, p120: 2, p300: 1 };
+
+const $ = (id) => document.getElementById(id);
+const rub = (n) => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₽';
+const num = (id) => Number(String($(id).value).replace(',', '.')) || 0;
+
+$('plans').innerHTML = PLANS.map((p) => `<div class="card">
+  <span class="pill">до ${p.limit} партнёров</span>
+  <div style="font-size:23px;font-weight:700;letter-spacing:-.02em;margin-top:10px">${rub(p.price)}<span style="font-size:13px;color:var(--dim);font-weight:400">/мес</span></div>
+  <div class="dim" style="margin-top:2px">${Math.round(p.price / p.limit)} ₽ за партнёра</div>
+  <p class="dim" style="margin-top:8px;font-size:13.5px">${p.what}</p>
+  <label style="margin-top:10px">Цена, ₽/мес</label><input type="number" id="price-${p.key}" value="${p.price}" />
+</div>`).join('');
+
+$('mix').innerHTML = PLANS.map((p) => `<div><label>${p.name}: клиентов</label><input type="number" id="cnt-${p.key}" value="${START[p.key]}" /></div>`).join('');
+
+function calc() {
+  const plans = PLANS.map((p) => ({ ...p, price: num('price-' + p.key), count: num('cnt-' + p.key) }));
+  const clients = plans.reduce((s, p) => s + p.count, 0);
+  const mrr = plans.reduce((s, p) => s + p.price * p.count, 0);
+  const arpu = clients ? mrr / clients : 0;
+
+  const fee = num('fee') / 100;
+  const perClient = num('cPerInfra') + num('hSupport') * num('hourCost');
+  const varCost = perClient * clients + mrr * fee;
+  const fixed = num('cInfra') + num('cServices') + num('cAccount') + num('cTeam');
+  const setupRevenue = num('setups') * num('setupPrice');
+  const setupCost = num('setups') * num('hSetup') * num('hourCost');
+  const marketing = num('cMarketing');
+
+  const revenue = mrr + setupRevenue;
+  const gross = mrr - varCost;                    // валовая прибыль по подписке
+  const grossPct = mrr ? gross / mrr * 100 : 0;
+  const profit = revenue - varCost - fixed - marketing - setupCost;
+
+  // Привлечение: часть клиентов приходит из агентства бесплатно.
+  const newPerMonth = num('newPerMonth');
+  const paidNew = newPerMonth * (1 - num('crossShare') / 100);
+  const cac = paidNew > 0 ? marketing / paidNew : 0;
+  const churn = num('churn') / 100;
+  const lifetime = churn > 0 ? 1 / churn : 0;      // месяцев
+  const ltv = arpu * (1 - (perClient / (arpu || 1)) - fee) * lifetime + num('setupPrice') * 0.5;
+  const ratio = cac > 0 ? ltv / cac : 0;
+  const breakeven = arpu && (arpu - perClient - arpu * fee) > 0
+    ? (fixed + marketing) / (arpu - perClient - arpu * fee) : 0;
+
+  $('kpis').innerHTML = `
+    <div class="card kpi"><b class="acc">${rub(mrr)}</b><span>Выручка с подписок в месяц (MRR)</span></div>
+    <div class="card kpi"><b>${rub(revenue * 12)}</b><span>Годовая выручка при текущих цифрах</span></div>
+    <div class="card kpi"><b class="${profit >= 0 ? 'good' : 'bad'}">${rub(profit)}</b><span>Прибыль в месяц с учётом всех расходов</span></div>
+    <div class="card kpi"><b>${grossPct.toFixed(0)}%</b><span>Валовая маржа подписки</span></div>
+    <div class="card kpi"><b>${rub(arpu)}</b><span>Средний чек клиента в месяц</span></div>
+    <div class="card kpi"><b>${rub(cac)}</b><span>Стоимость привлечения клиента</span></div>
+    <div class="card kpi"><b>${rub(ltv)}</b><span>Сколько приносит клиент за всю жизнь</span></div>
+    <div class="card kpi"><b class="${ratio >= 3 ? 'good' : ratio >= 1 ? '' : 'bad'}">${ratio.toFixed(1)}×</b><span>LTV / CAC — здоровым считается от 3×</span></div>`;
+
+  // Год вперёд: новые клиенты минус отток, средний чек не меняем.
+  const rows = [];
+  let n = clients;
+  for (let m = 1; m <= 12; m++) {
+    const lost = n * churn;
+    n = n - lost + newPerMonth;
+    const m_mrr = n * arpu;
+    const m_var = perClient * n + m_mrr * fee;
+    const m_setup = newPerMonth * num('setupPrice');
+    const m_setupCost = newPerMonth * num('hSetup') * num('hourCost');
+    const m_profit = m_mrr + m_setup - m_var - fixed - marketing - m_setupCost;
+    rows.push({ m, n, mrr: m_mrr, revenue: m_mrr + m_setup, profit: m_profit });
+  }
+  const last = rows[rows.length - 1];
+  $('plan').innerHTML = `<tr><th>Месяц</th><th>Клиентов</th><th>MRR</th><th>Выручка</th><th>Прибыль</th></tr>` +
+    rows.map((r) => `<tr class="${r.m === 12 ? 'total' : ''}"><td>${r.m}</td><td>${r.n.toFixed(0)}</td><td>${rub(r.mrr)}</td><td>${rub(r.revenue)}</td><td class="${r.profit >= 0 ? 'good' : 'bad'}">${rub(r.profit)}</td></tr>`).join('');
+
+  const max = Math.max(...rows.map((r) => Math.abs(r.mrr)), 1);
+  $('chart').innerHTML = rows.map((r) => `<div class="bar" style="height:${Math.max(2, r.mrr / max * 100)}%"><span>${r.m}</span></div>`).join('');
+
+  const firstProfit = rows.find((r) => r.profit > 0);
+  $('payback').textContent = firstProfit
+    ? `Выход в плюс: месяц ${firstProfit.m}. Через год — ${last.n.toFixed(0)} клиентов, MRR ${rub(last.mrr)}, прибыль ${rub(last.profit)} в месяц.`
+    : `При этих цифрах прибыли за год не будет: нужно поднять цену, снизить расходы или увеличить поток клиентов.`;
+
+  const checks = [
+    [ratio >= 3, `LTV/CAC = ${ratio.toFixed(1)}× ${ratio >= 3 ? '— привлекать выгодно' : '— привлечение съедает прибыль, нужен упор на клиентов из агентства'}`],
+    [grossPct >= 70, `Валовая маржа ${grossPct.toFixed(0)}% ${grossPct >= 70 ? '— нормально для такого продукта' : '— слишком дорогое обслуживание клиента'}`],
+    [churn <= 0.05, `Отток ${(churn * 100).toFixed(1)}%/мес ${churn <= 0.05 ? '— клиент живёт ' + lifetime.toFixed(0) + ' мес.' : '— клиенты уходят быстрее, чем окупаются'}`],
+    [breakeven <= clients, `Точка безубыточности: ${Math.ceil(breakeven)} клиентов ${breakeven <= clients ? '— уже пройдена' : '— ещё не достигнута'}`],
+    [arpu >= 5000, `Средний чек ${rub(arpu)} ${arpu >= 5000 ? '— выдерживает ручную поддержку' : '— при таком чеке поддержка должна быть почти нулевой'}`],
+  ];
+  $('sanity').innerHTML = checks.map(([ok, text]) =>
+    `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)">
+       <span style="width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:700;background:${ok ? 'var(--ok-bg)' : 'var(--bad-bg)'};color:${ok ? 'var(--ok)' : 'var(--bad)'}">${ok ? '✓' : '!'}</span>
+       <span>${text}</span></div>`).join('');
+}
+
+document.addEventListener('input', calc);
+calc();
+</script>
+</body>
+</html>
