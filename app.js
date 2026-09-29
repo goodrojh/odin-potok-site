@@ -57,6 +57,18 @@ const PRICES = [
   { n: 'Настройка CRM', d: 'воронка, поля, интеграции — один раз', p: '20 000 ₽' },
 ];
 
+/** Цены по отделу продаж. */
+const SALES_PRICES = [
+  { n: 'Мини-аудит отдела продаж', d: 'вводный разбор с рекомендациями и файлом-отчётом', p: 'бесплатно' },
+  { n: 'Полный аудит', d: 'записи разговоров, скрипты, система рекомендаций', p: 'от 40 000 ₽' },
+  { n: 'Скрипт продаж', d: 'разработка и корректировка под вашу нишу', p: 'от 25 000 ₽' },
+  { n: 'Регламенты и отчётность', d: 'лист качества, формы отчётов, инструкции', p: 'от 20 000 ₽' },
+  { n: 'Подбор менеджера под ключ', d: 'вакансия, воронка, собеседования, гарантия', p: 'от 50 000 ₽' },
+  { n: 'Аренда руководителя отдела продаж', d: 'ведение отдела по договору и KPI', p: 'от 120 000 ₽/мес' },
+  { n: 'Выездной тренинг для команды', d: '2 дня, 16 часов', p: 'от 300 000 ₽' },
+  { n: 'Консультация', d: '1,5 часа, пакет документов под запрос, запись встречи', p: 'от 40 000 ₽' },
+];
+
 /* ------------------------------------------------------------------ */
 /* Сборка                                                              */
 /* ------------------------------------------------------------------ */
@@ -70,10 +82,11 @@ function header() {
   const links = [
     { href: 'index.html', t: 'Главная', k: 'home' },
     { href: 'agency.html', t: 'Привлечение заявок', k: 'agency' },
+    { href: 'sales.html', t: 'Отдел продаж', k: 'sales' },
     { href: 'platform.html', t: 'Учёт партнёрки', k: 'platform' },
   ];
-  const cta = PAGE === 'platform'
-    ? `<a class="btn btn--sm" href="#trial">Попробовать бесплатно</a>`
+  const cta = PAGE === 'platform' ? `<a class="btn btn--sm" href="#trial">Попробовать бесплатно</a>`
+    : PAGE === 'sales' ? `<a class="btn btn--sm" href="#audit">Бесплатный аудит</a>`
     : `<a class="btn btn--sm" href="${PAGE === 'agency' ? '#start' : 'agency.html#start'}">Разбор за 30 минут</a>`;
   return `<div class="wrap head__in">
     <a class="brand" href="index.html"><img src="assets/logo-mark.png" alt="" /> Один поток</a>
@@ -100,6 +113,12 @@ function footer() {
         <a href="agency.html">Что входит</a>
         <a href="agency.html#how">Как работаем</a>
         <a href="agency.html#prices">Цены</a>
+      </div>
+      <div class="foot__col">
+        <b>Отдел продаж</b>
+        <a href="sales.html#what">Что делаем</a>
+        <a href="sales.html#prices">Цены</a>
+        <a href="sales.html#audit">Бесплатный аудит</a>
       </div>
       <div class="foot__col">
         <b>Учёт партнёрки</b>
@@ -201,6 +220,7 @@ const hdr = $('#head'); if (hdr) hdr.innerHTML = header();
 const ftr = $('#foot'); if (ftr) ftr.innerHTML = footer();
 buildMarquee();
 buildList('#channels', CHANNELS, (c) => `<div class="card rise"><h3>${esc(c.n)}</h3><p class="mt-s">${esc(c.d)}</p></div>`);
+buildList('#sales-prices', SALES_PRICES, (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`);
 buildList('#prices-list', PRICES, (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`);
 applyContacts();
 watchRise();
