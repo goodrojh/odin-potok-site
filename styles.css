@@ -356,3 +356,25 @@ img { max-width: 100%; display: block; }
 .path__i b { display: block; font-size: 17.5px; margin-bottom: 6px; }
 .path__i span { font-size: 15px; color: var(--dim); }
 @media (max-width: 960px) { .path { grid-template-columns: 1fr; } }
+
+/* ---------- пример расчёта ---------- */
+.calc { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; box-shadow: var(--shadow-soft); }
+.calc__row { display: grid; grid-template-columns: 2fr 1.2fr .8fr 1.2fr; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--line); align-items: center; font-size: 16px; }
+.calc__row:last-child { border-bottom: 0; }
+.calc__head { background: var(--paper); font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); }
+.calc__row b { font-variant-numeric: tabular-nums; }
+.calc__total { background: var(--accent-soft); font-weight: 600; }
+.calc__total b { color: var(--accent); font-size: 19px; }
+@media (max-width: 760px) {
+  .calc__row { grid-template-columns: 1fr auto; gap: 6px 14px; }
+  .calc__head { display: none; }
+  .calc__row span:nth-child(3) { color: var(--dim); font-size: 14px; }
+}
+
+/* ---------- экран и телефон рядом ---------- */
+.pair { position: relative; padding-bottom: 40px; }
+.pair__phone { position: absolute; right: -10px; bottom: 0; width: 168px; border-width: 7px; border-radius: 26px; }
+@media (max-width: 960px) { .pair__phone { position: static; margin: 18px auto 0; width: 220px; } .pair { padding-bottom: 0; } }
+
+/* Узкий скриншот (карточка CRM) не растягиваем — иначе размывается. */
+.shot--narrow { max-width: 420px; margin-inline: auto; }
