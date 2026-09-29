@@ -332,3 +332,27 @@ img { max-width: 100%; display: block; }
 
 .way h2 { font-size: clamp(24px, 2.4vw, 32px); }
 .way .lead { font-size: 16px; }
+
+/* ---------- чередование текст/картинка ---------- */
+.split--flip { direction: rtl; }
+.split--flip > * { direction: ltr; }
+.shot--plain { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; box-shadow: var(--shadow); }
+.shot--plain img { width: 100%; display: block; }
+
+/* ---------- полоса цифр ---------- */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; padding: 34px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stats b { display: block; font-size: clamp(30px, 3.4vw, 42px); font-weight: 800; letter-spacing: -.03em; color: var(--accent); line-height: 1.1; }
+.stats span { font-size: 15.5px; color: var(--dim); display: block; margin-top: 6px; }
+@media (max-width: 960px) { .stats { grid-template-columns: 1fr; gap: 20px; } }
+
+/* ---------- простой нумерованный путь ---------- */
+.path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; counter-reset: p; }
+.path__i { position: relative; padding-top: 40px; }
+.path__i::before {
+  counter-increment: p; content: counter(p);
+  position: absolute; top: 0; left: 0; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 15px;
+}
+.path__i b { display: block; font-size: 17.5px; margin-bottom: 6px; }
+.path__i span { font-size: 15px; color: var(--dim); }
+@media (max-width: 960px) { .path { grid-template-columns: 1fr; } }
