@@ -60,10 +60,10 @@ const PRICES = [
 /** Тарифы платформы: предел партнёров, цена в месяц, для кого. */
 const PRM_PLANS = [
   { limit: 5,   price: 3900,  who: 'Первая партнёрская программа' },
-  { limit: 15,  price: 6900,  who: 'Рабочая программа + CRM' },
-  { limit: 30,  price: 9900,  who: 'Разные условия по услугам' },
+  { limit: 15,  price: 6900,  who: 'Рабочая программа и связка с CRM' },
+  { limit: 30,  price: 9900,  who: 'Свои условия по каждой услуге', hot: true },
   { limit: 60,  price: 14900, who: 'Сеть приводит клиентов регулярно' },
-  { limit: 120, price: 21900, who: 'Крупная сеть, выгрузки' },
+  { limit: 120, price: 21900, who: 'Крупная сеть и выгрузки' },
   { limit: 300, price: 34900, who: 'Дилерская или агентская сеть' },
 ];
 const PRM_SETUP = 10000;      // подключение, разово
@@ -182,13 +182,17 @@ function buildPlans() {
   if (!box) return;
   const money = (n) => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₽';
   box.innerHTML = PRM_PLANS.map((p) => {
-    const month = prmYear ? Math.round(p.price * (100 - PRM_YEAR_OFF) / 100) : p.price;
-    return `<div class="plan">
-      <div class="plan__limit">до ${p.limit} ${p.limit === 5 ? 'партнёров' : 'партнёров'}</div>
+    const year = Math.round(p.price * (100 - PRM_YEAR_OFF) / 100);
+    const month = prmYear ? year : p.price;
+    const save = (p.price - year) * 12;
+    return `<article class="plan${p.hot ? ' plan--hot' : ''}">
+      ${p.hot ? '<span class="plan__flag">Выбирают чаще всего</span>' : ''}
+      <span class="plan__limit">до ${p.limit} партнёров</span>
       <div class="plan__price">${money(month)}<span>/мес</span></div>
-      <div class="plan__per">${Math.round(month / p.limit)} ₽ за партнёра${prmYear ? ' · при оплате за год' : ''}</div>
-      <div class="plan__who">${esc(p.who)}</div>
-    </div>`;
+      <div class="plan__per">${prmYear ? `вместо ${money(p.price)} при оплате по месяцам` : `${money(Math.round(month / p.limit))} за партнёра`}</div>
+      <p class="plan__who">${esc(p.who)}</p>
+      <div class="plan__save">${prmYear ? `Экономия ${money(save)} за год` : `${money(year)}/мес при оплате за год`}</div>
+    </article>`;
   }).join('');
   document.querySelectorAll('[data-period]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.period === 'year') === prmYear)));
 }
