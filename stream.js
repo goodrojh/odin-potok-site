@@ -15,7 +15,28 @@
  */
 (() => {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const COLORS = ['rgba(138,127,224,', 'rgba(124,110,214,', 'rgba(167,158,236,'];
+  const COLORS = [[138, 127, 224], [124, 110, 214], [173, 164, 240]];
+
+  /**
+   * Мягкая «пушинка»: круг с размытым краем, нарисованный один раз в
+   * маленький холст. Дальше его просто копируем — три тысячи градиентов
+   * в кадре не потянет ни один браузер, а один скопировать дёшево.
+   */
+  function fluff(rgb) {
+    const S = 48;
+    const c = document.createElement('canvas');
+    c.width = S; c.height = S;
+    const g = c.getContext('2d');
+    const grad = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+    grad.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.95)`);
+    grad.addColorStop(0.35, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.55)`);
+    grad.addColorStop(0.72, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.14)`);
+    grad.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, S, S);
+    return c;
+  }
+  const SPRITES = COLORS.map(fluff);
   const HOLD = 2100;        // сколько держим слово
   const MORPH = 1500;       // сколько перетекаем
   const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -74,10 +95,10 @@
       // так видно, что поток физически усыхает, а не просто меняет надпись.
       const longest = Math.max(...words.map((t) => t.length));
       const base = Math.min(h * 0.66, (w * 0.9) / Math.max(3.2, longest * 0.58));
-      let gap = 3;
+      let gap = 5;
       for (let i = 0; i < 4; i++) {
         shapes = words.map((t, k) => sample(t, SCALE[k] ?? 0.3, gap, base));
-        if (Math.max(...shapes.map((sh) => sh.length / 2)) <= 3000) break;
+        if (Math.max(...shapes.map((sh) => sh.length / 2)) <= 1500) break;
         gap += 1;
       }
       const n = Math.max(...shapes.map((sh) => Math.round(sh.length / 2)));
@@ -86,10 +107,12 @@
         x: w / 2 + (Math.random() - 0.5) * w,
         y: h / 2 + (Math.random() - 0.5) * h,
         fx: 0, fy: 0, tx: 0, ty: 0,
-        fa: 0, ta: 1, a: 1,
+        fa: 0, ta: 1, a: 1, br: 0.5,
         sw: (Math.random() - 0.5) * 0.9,          // завихрение по дороге
-        s: Math.random() < 0.14 ? 3.1 : 2.1,
-        c: COLORS[i % COLORS.length],
+        s: (Math.random() < 0.18 ? 13 : 9) + Math.random() * 3,
+        ph: Math.random() * 6.28,                 // фаза дыхания — вместо дрожи
+        sp: 0.5 + Math.random() * 0.7,
+        g: i % SPRITES.length,
       }));
       aim(0, true);
     }
@@ -113,23 +136,15 @@
       });
     }
 
-    /* Два прохода: мягкое свечение и сама точка. Всё одной заливкой на цвет,
-       иначе три тысячи отдельных кругов съедают кадр. */
     function draw() {
       ctx.clearRect(0, 0, w, h);
-      for (const pass of [{ grow: 3.2, al: '0.16)' }, { grow: 0, al: '0.95)' }]) {
-        for (let g = 0; g < COLORS.length; g++) {
-          ctx.beginPath();
-          let any = false;
-          for (const p of pts) {
-            if (p.c !== COLORS[g] || p.a <= 0.02) continue;
-            const s = p.s + pass.grow;
-            ctx.rect(p.x - s / 2, p.y - s / 2, s, s);
-            any = true;
-          }
-          if (any) { ctx.fillStyle = COLORS[g] + pass.al; ctx.fill(); }
-        }
+      for (const p of pts) {
+        if (p.a <= 0.02) continue;
+        const s = p.s * (0.88 + p.br * 0.12);
+        ctx.globalAlpha = Math.min(1, p.a);
+        ctx.drawImage(SPRITES[p.g], p.x - s / 2, p.y - s / 2, s, s);
       }
+      ctx.globalAlpha = 1;
     }
 
     function frame(now) {
@@ -147,9 +162,13 @@
           p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4;
           p.a = p.fa + (p.ta - p.fa) * k;
         } else {
-          p.x += (p.tx - p.x) * 0.08 + (Math.random() - 0.5) * 0.35;   // лёгкое дыхание
-          p.y += (p.ty - p.y) * 0.08 + (Math.random() - 0.5) * 0.35;
+          // Плавное дыхание по своей фазе: никакого случайного дрожания,
+          // иначе облако мерцает и выглядит как помехи.
+          const b = Math.sin(now / 1100 * p.sp + p.ph);
+          p.x += (p.tx + b * 1.1 - p.x) * 0.07;
+          p.y += (p.ty + Math.cos(now / 1300 * p.sp + p.ph) * 1.1 - p.y) * 0.07;
         }
+        p.br = (Math.sin(now / 900 * p.sp + p.ph) + 1) / 2;
         // Курсор расталкивает облако.
         const dx = p.x - pointer.x; const dy = p.y - pointer.y;
         const d2 = dx * dx + dy * dy;

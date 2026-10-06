@@ -23,44 +23,54 @@
   (function calc() {
     const root = el('calc');
     if (!root) return;
+    // Ползунки вместо полей: цифру можно не вводить, а нащупать — и сразу
+    // видно, что двигается сильнее всего.
     const F = [
-      { k: 'budget', t: 'Бюджет на рекламу в месяц', v: 150000, step: 10000, unit: '₽' },
-      { k: 'cpc', t: 'Цена клика', v: 45, step: 5, unit: '₽' },
-      { k: 'cr1', t: 'Из кликов в заявки', v: 4, step: 0.5, unit: '%' },
-      { k: 'cr2', t: 'Из заявок в продажи', v: 20, step: 1, unit: '%' },
-      { k: 'check', t: 'Средний чек', v: 60000, step: 5000, unit: '₽' },
-      { k: 'margin', t: 'Маржа в чеке', v: 30, step: 1, unit: '%' },
+      { k: 'budget', t: 'Бюджет на рекламу', v: 150000, min: 30000, max: 1000000, step: 10000, u: '₽/мес' },
+      { k: 'cpc', t: 'Цена клика', v: 45, min: 5, max: 400, step: 5, u: '₽' },
+      { k: 'cr1', t: 'Из кликов в заявки', v: 4, min: 0.5, max: 20, step: 0.5, u: '%' },
+      { k: 'cr2', t: 'Из заявок в продажи', v: 20, min: 2, max: 80, step: 1, u: '%' },
+      { k: 'check', t: 'Средний чек', v: 60000, min: 5000, max: 2000000, step: 5000, u: '₽' },
+      { k: 'margin', t: 'Маржа в чеке', v: 30, min: 5, max: 90, step: 1, u: '%' },
     ];
-    const state = Object.fromEntries(F.map((f) => [f.k, f.v]));
+    const st = Object.fromEntries(F.map((f) => [f.k, f.v]));
+    const show = (f) => (f.u === '%' ? st[f.k] : num(st[f.k])) + ' ' + f.u;
 
     root.innerHTML = `
       <div class="calc__in">
         ${F.map((f) => `<label class="calc__f">
-          <span>${f.t}<b>${f.unit}</b></span>
-          <input type="number" id="cf_${f.k}" value="${f.v}" step="${f.step}" min="0" inputmode="decimal" />
+          <span>${f.t}<b class="calc__v" id="cv_${f.k}">${show(f)}</b></span>
+          <input type="range" id="cf_${f.k}" value="${f.v}" min="${f.min}" max="${f.max}" step="${f.step}" />
         </label>`).join('')}
-        <p class="calc__hint">Поставьте свои числа — пересчитается сразу. Не знаете конверсию? Оставьте как есть, порядок величин увидите.</p>
+        <p class="calc__hint">Числа ваши — арифметика наша. Это не прогноз и не обещание: так считают до запуска, чтобы решить, стоит ли он того.</p>
       </div>
       <div class="calc__out">
+        <div class="calc__hero" id="calcHero"></div>
         <div class="calc__flow" id="calcFlow"></div>
         <div class="calc__kpis" id="calcKpis"></div>
         <p class="calc__note" id="calcVerdict"></p>
       </div>`;
 
     function draw() {
-      const clicks = state.cpc > 0 ? state.budget / state.cpc : 0;
-      const leads = clicks * state.cr1 / 100;
-      const sales = leads * state.cr2 / 100;
-      const revenue = sales * state.check;
-      const profit = revenue * state.margin / 100 - state.budget;
-      const cpl = leads > 0 ? state.budget / leads : 0;
-      const cps = sales > 0 ? state.budget / sales : 0;
-      const drr = revenue > 0 ? state.budget / revenue * 100 : 0;
+      const clicks = st.cpc > 0 ? st.budget / st.cpc : 0;
+      const leads = clicks * st.cr1 / 100;
+      const sales = leads * st.cr2 / 100;
+      const revenue = sales * st.check;
+      const gross = revenue * st.margin / 100;
+      const profit = gross - st.budget;
+      const cpl = leads > 0 ? st.budget / leads : 0;
+      const cps = sales > 0 ? st.budget / sales : 0;
+      const romi = st.budget > 0 ? profit / st.budget * 100 : 0;
+
+      const hero = el('calcHero');
+      hero.className = 'calc__hero' + (profit < 0 ? ' is-bad' : '');
+      hero.innerHTML = `<b>${profit >= 0 ? rub(profit) : '−' + rub(-profit)}</b>
+        <span>${profit >= 0 ? 'остаётся в месяц после затрат на рекламу' : 'столько реклама забирает сверх того, что приносит'}</span>`;
 
       const rows = [
         { t: 'Кликов', v: num(clicks), w: 100 },
-        { t: 'Заявок', v: num(leads), w: Math.max(6, state.cr1) },
-        { t: 'Продаж', v: num(sales), w: Math.max(3, state.cr1 * state.cr2 / 100 * 3) },
+        { t: 'Заявок', v: num(leads), w: Math.max(5, st.cr1 * 4) },
+        { t: 'Продаж', v: num(sales), w: Math.max(2.5, st.cr1 * st.cr2 / 100 * 4) },
       ];
       el('calcFlow').innerHTML = rows.map((r) => `<div class="calc__bar">
         <span class="calc__bt">${r.t}</span>
@@ -68,24 +78,25 @@
         <b>${r.v}</b></div>`).join('');
 
       el('calcKpis').innerHTML = [
-        ['Заявка', rub(cpl)],
-        ['Продажа', rub(cps)],
-        ['Выручка', rub(revenue)],
-        [profit >= 0 ? 'Остаётся' : 'Не хватает', rub(Math.abs(profit))],
+        ['Заявка', rub(cpl)], ['Продажа', rub(cps)],
+        ['Выручка', rub(revenue)], ['На рубль рекламы', (romi >= 0 ? '+' : '−') + Math.abs(romi).toFixed(0) + '%'],
       ].map(([t, v], i) => `<div class="calc__kpi${i === 3 ? (profit >= 0 ? ' is-ok' : ' is-bad') : ''}"><b>${v}</b><span>${t}</span></div>`).join('');
 
       el('calcVerdict').innerHTML = revenue <= 0
-        ? 'Заполните поля — посчитаем.'
+        ? 'Подвигайте ползунки — посчитаем.'
         : profit >= 0
-          ? `Реклама съедает <b>${drr.toFixed(1)}%</b> выручки и после всех расходов на неё остаётся <b>${rub(profit)}</b> валовой прибыли в месяц. Чтобы заработать вдвое больше, не обязательно удваивать бюджет — обычно дешевле поднять конверсию сайта и скорость ответа.`
-          : `Реклама съедает <b>${drr.toFixed(1)}%</b> выручки — больше, чем приносит. Это не значит «реклама не работает»: чаще всего мешает одно из трёх — дорогой клик, слабый сайт или медленный отдел продаж. С этого и начинаем разбор.`;
+          ? `Реклама забирает <b>${(st.budget / revenue * 100).toFixed(1)}%</b> выручки. Поднимите «из кликов в заявки» на один пункт — и посмотрите, насколько вырастет итог. Обычно это дешевле, чем докладывать бюджет: тем и занимается сайт и скорость ответа.`
+          : `При этих числах канал не окупается. Это не приговор рекламе: чаще мешает что-то одно — дорогой клик, слабая посадочная или медленный отдел продаж. Подвигайте конверсии и увидите, какой рычаг сильнее.`;
     }
 
     for (const f of F) {
-      el('cf_' + f.k).addEventListener('input', (e) => {
-        state[f.k] = Math.max(0, Number(e.target.value) || 0);
-        draw();
-      });
+      const inp = el('cf_' + f.k);
+      const sync = () => {
+        inp.style.setProperty('--p', ((st[f.k] - f.min) / (f.max - f.min) * 100).toFixed(1) + '%');
+        el('cv_' + f.k).textContent = show(f);
+      };
+      inp.addEventListener('input', (e) => { st[f.k] = Number(e.target.value); sync(); draw(); });
+      sync();
     }
     draw();
   }());
@@ -344,6 +355,57 @@
       }));
     };
     render();
+  }());
+
+  /* ================================================================ */
+  /* 6. Вопросы: аккордеон                                            */
+  /* ================================================================ */
+  /* Разметка на страницах остаётся обычным <details> — и работает без
+     скрипта. Здесь мы её только пересобираем в аккордеон: нумерация,
+     открыт один пункт, у открытого вопроса крупнее кегль. */
+  (function faq() {
+    document.querySelectorAll('.faq').forEach((box) => {
+      const items = [...box.querySelectorAll('details')].map((d) => ({
+        q: d.querySelector('summary')?.textContent.trim() ?? '',
+        a: d.querySelector('p')?.innerHTML ?? '',
+        pill: d.dataset.pill || '',
+      }));
+      if (!items.length) return;
+
+      box.classList.add('faq--acc');
+      box.innerHTML = items.map((it, i) => `<div class="qa" data-i="${i}">
+        <button class="qa__head" type="button" aria-expanded="false">
+          <span class="qa__n">${String(i + 1).padStart(2, '0')}</span>
+          <span class="qa__q">${esc(it.q)}</span>
+          <span class="qa__ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </button>
+        <div class="qa__body"><div class="qa__in">
+          <p class="qa__a">${it.a}</p>
+          ${it.pill ? `<span class="qa__pill">${esc(it.pill)}</span>` : ''}
+        </div></div>
+      </div>`).join('');
+
+      const rows = [...box.querySelectorAll('.qa')];
+      const open = (row, on) => {
+        const body = row.querySelector('.qa__body');
+        row.classList.toggle('is-open', on);
+        row.querySelector('.qa__head').setAttribute('aria-expanded', String(on));
+        body.style.height = on ? body.querySelector('.qa__in').offsetHeight + 'px' : '0px';
+      };
+      rows.forEach((row) => row.querySelector('.qa__head').addEventListener('click', () => {
+        const was = row.classList.contains('is-open');
+        rows.forEach((r) => open(r, false));
+        if (!was) open(row, true);
+      }));
+      rows.forEach((r) => open(r, false));
+      open(rows[1] ?? rows[0], true);                 // один пункт открыт сразу
+      addEventListener('resize', () => {
+        const cur = rows.find((r) => r.classList.contains('is-open'));
+        if (cur) open(cur, true);
+      }, { passive: true });
+    });
   }());
 
   /* ================================================================ */

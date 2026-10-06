@@ -27,47 +27,34 @@ const PLATFORMS = [
   { n: 'Битрикс24', t: 'Сделки и воронка', logo: 'bitrix24.png' },
   { n: 'Авито Ads', t: 'Медийная реклама', c: '#0b7fd4', s: 'Ad' },
   { n: 'DMP One', t: 'Сегменты и look-alike', c: '#6356c8', s: 'DMP' },
-  { n: 'ИИ-менеджер', t: 'Ответы на заявки 24/7', c: '#1e1a36', s: 'AI' },
   { n: 'Яндекс Карты', t: 'Карточка и промо', c: '#ffcc00', s: 'К' },
   { n: 'Сквозная аналитика', t: 'Отчёт по каналам', c: '#8a7fe0', s: '∑' },
 ];
 
 /** Что делаем в каждом канале — страница агентства. */
 const CHANNELS = [
-  { n: 'Яндекс Директ', d: 'Поиск, РСЯ и ретаргетинг. Семантика под ваши услуги, минус-слова, корректировки по звонкам и сделкам.' },
-  { n: 'Авито', d: 'Карточки, объявления, автозагрузка и продвижение. Отдельная воронка под площадку, где решают быстро.' },
-  { n: 'Авито Ads', d: 'Медийные размещения на аудиторию площадки: догоняем тех, кто уже смотрел похожие предложения.' },
-  { n: 'ВКонтакте', d: 'Таргет по интересам и look-alike, лид-формы, сообщество и прогрев тех, кто пока не готов.' },
-  { n: 'Telegram Ads', d: 'Реклама в профильных каналах и ретаргет на подписчиков. Хорошо работает на длинный чек.' },
-  { n: 'DMP One', d: 'Сегменты по поведению и look-alike на базе ваших клиентов — там, где обычный таргет уже выдохся.' },
-  { n: 'ИИ-менеджер', d: 'Отвечает на заявки за минуту в любое время, квалифицирует и передаёт менеджеру готовый диалог.' },
-  { n: 'Настройка CRM', d: 'Воронка, поля, автоматизации, интеграции с каналами. Заявки падают в CRM с источником и записью разговора.' },
-  { n: 'Сквозная аналитика', d: 'Один отчёт: сколько заявок, по какой цене и что из этого стало деньгами. Без сведения таблиц вручную.' },
+  { n: 'Яндекс Директ', logo: 'yandex.png', d: 'Поиск, РСЯ и ретаргетинг. Семантика под ваши услуги, минус-слова, корректировки ставок по звонкам и сделкам.' },
+  { n: 'Авито', logo: 'avito.png', d: 'Карточки, объявления, автозагрузка и продвижение. Отдельная воронка под площадку, где решают быстро.' },
+  { n: 'Авито Ads', logo: 'avito.png', d: 'Медийные размещения на аудиторию площадки: догоняем тех, кто уже смотрел похожие предложения.' },
+  { n: 'ВКонтакте', logo: 'vk.png', d: 'Таргет по интересам и look-alike, лид-формы, сообщество и прогрев тех, кто пока не готов.' },
+  { n: 'Telegram Ads', logo: 'telegram.png', d: 'Реклама в профильных каналах и ретаргет на подписчиков. Хорошо работает на длинный чек.' },
+  { n: '2ГИС и Яндекс Карты', logo: '2gis.png', d: 'Карточка организации, отзывы, приоритетное размещение. Дешёвые заявки от тех, кто ищет рядом.' },
+  { n: 'DMP One', c: '#6356c8', s: 'DMP', d: 'Сегменты по поведению и look-alike на базе ваших клиентов — там, где обычный таргет уже выдохся.' },
+  { n: 'Настройка CRM', logo: 'amocrm.png', d: 'Воронка, поля, автоматизации, интеграции с каналами. Заявки падают в CRM с источником и записью разговора.' },
+  { n: 'Сквозная аналитика', c: '#1e1a36', s: '∑', d: 'Один отчёт: сколько заявок, по какой цене и что из этого стало деньгами. Без сведения таблиц вручную.' },
 ];
 
-/** Прайс агентства. */
+/** Прайс агентства: карточка с логотипом площадки и ценой. */
 const PRICES = [
-  { n: 'Яндекс Директ', d: 'ведение, аналитика, еженедельные правки', p: '35 000 ₽/мес' },
-  { n: 'Авито', d: 'карточки, объявления, продвижение', p: '40 000 ₽/мес' },
-  { n: 'Авито Ads', d: 'медийные размещения', p: '35 000 ₽/мес' },
-  { n: 'ВКонтакте', d: 'таргет, лид-формы, сообщество', p: '35 000 ₽/мес' },
-  { n: 'DMP One', d: 'сегменты и look-alike', p: '42 000 ₽/мес' },
-  { n: 'ИИ-менеджер', d: 'ответы на заявки и квалификация', p: '35 000 ₽/мес' },
-  { n: 'Органический трафик', d: 'карты, отзывы, рассылки, боты', p: '35 000 ₽/мес' },
-  { n: 'Настройка CRM', d: 'воронка, поля, интеграции — один раз', p: '20 000 ₽' },
+  { n: 'Яндекс Директ', logo: 'yandex.png', d: 'поиск, РСЯ, ретаргетинг', p: 35000 },
+  { n: 'Авито', logo: 'avito.png', d: 'карточки, объявления, продвижение', p: 40000 },
+  { n: 'Авито Ads', logo: 'avito.png', d: 'медийные размещения', p: 35000 },
+  { n: 'ВКонтакте', logo: 'vk.png', d: 'таргет, лид-формы, сообщество', p: 35000 },
+  { n: 'Telegram Ads', logo: 'telegram.png', d: 'каналы и ретаргет', p: 35000 },
+  { n: '2ГИС и Карты', logo: '2gis.png', d: 'карточки, отзывы, промо', p: 35000 },
+  { n: 'DMP One', c: '#6356c8', s: 'DMP', d: 'сегменты и look-alike', p: 42000 },
+  { n: 'Настройка CRM', logo: 'amocrm.png', d: 'воронка, поля, интеграции — один раз', p: 20000, once: true },
 ];
-
-/** Тарифы платформы: предел партнёров, цена в месяц, для кого. */
-const PRM_PLANS = [
-  { limit: 5,   price: 3900,  who: 'Первая партнёрская программа' },
-  { limit: 15,  price: 6900,  who: 'Рабочая программа и связка с CRM' },
-  { limit: 30,  price: 9900,  who: 'Свои условия по каждой услуге', hot: true },
-  { limit: 60,  price: 14900, who: 'Сеть приводит клиентов регулярно' },
-  { limit: 120, price: 21900, who: 'Крупная сеть и выгрузки' },
-  { limit: 300, price: 34900, who: 'Дилерская или агентская сеть' },
-];
-const PRM_SETUP = 10000;      // подключение, разово
-const PRM_YEAR_OFF = 20;      // скидка за год, %
 
 /** Что делаем в сайтах — страница «Создание сайтов». */
 const WEB_WORKS = [
@@ -154,16 +141,16 @@ function header() {
     { href: 'platform.html', t: 'Учёт партнёрки', k: 'platform' },
   ];
   // На внутренних страницах форма уже в первом экране — зовём к ней, а не на другую страницу.
-  const cta = PAGE === 'platform' ? `<a class="btn btn--sm" href="#trial">Попробовать бесплатно</a>`
-    : PAGE === 'home' ? `<a class="btn btn--sm" href="#start">Обсудить задачу</a>`
-    : `<a class="btn btn--sm" href="#start">Оставить заявку</a>`;
+  const cta = PAGE === 'platform' ? `<a class="btn btn--sm" data-plush href="#trial"><span>Попробовать бесплатно</span></a>`
+    : PAGE === 'home' ? `<a class="btn btn--sm" data-plush href="#start"><span>Обсудить задачу</span></a>`
+    : `<a class="btn btn--sm" data-plush href="#start"><span>Оставить заявку</span></a>`;
   return `<div class="wrap head__in">
     <a class="brand" href="index.html"><img src="assets/logo-mark.png" alt="" /> Один поток</a>
     <nav class="nav" id="nav">
       ${links.map((l) => `<a href="${l.href}" class="${l.k === PAGE ? 'is-active' : ''}">${l.t}</a>`).join('')}
     </nav>
     <div class="head__cta">
-      <a class="btn btn--ghost btn--sm" href="${CONTACTS.cabinet}" target="_blank" rel="noopener">Войти</a>
+      <a class="btn btn--ghost btn--sm" data-plush href="${CONTACTS.cabinet}" target="_blank" rel="noopener"><span>Войти</span></a>
       ${cta}
       <button class="burger" id="burger" aria-label="Меню">☰</button>
     </div>
@@ -249,6 +236,32 @@ function platformCard(p) {
     ? `<div class="plat__ic plat__ic--img"><img src="assets/logos/${p.logo}" alt="${esc(p.n)}" loading="lazy" /></div>`
     : `<div class="plat__ic" style="background:${p.c}">${esc(p.s)}</div>`;
   return `<div class="plat">${ic}<div class="plat__n">${esc(p.n)}</div><div class="plat__t">${esc(p.t)}</div></div>`;
+}
+
+/**
+ * Гирлянда: логотипы площадок висят на двух дугах. Точки берём прямо
+ * с кривой, поэтому «лампочки» сидят на проводе, а не рядом с ним.
+ */
+function buildGarland() {
+  const box = document.getElementById('garland');
+  if (!box) return;
+  const svg = box.parentElement.querySelector('.garland__wire');
+  const wires = [...svg.querySelectorAll('path')];
+  const VB = { w: 1200, h: 300 };
+  const rows = [PLATFORMS.slice(0, 5), PLATFORMS.slice(5, 10)];
+  box.innerHTML = wires.map((wire, r) => {
+    const list = rows[r] ?? rows[0];
+    const len = wire.getTotalLength();
+    return list.map((pl, i) => {
+      const shift = r ? 0.12 : 0.62;            // вторую дугу смещаем, иначе подписи наезжают
+      const at = wire.getPointAtLength(len * ((i + shift) / (list.length + 0.2)));
+      const ic = pl.logo
+        ? `<img src="assets/logos/${pl.logo}" alt="${esc(pl.n)}" loading="lazy" />`
+        : `<span style="background:${pl.c}">${esc(pl.s)}</span>`;
+      return `<div class="bulb" style="left:${(at.x / VB.w * 100).toFixed(2)}%;top:${(at.y / VB.h * 100).toFixed(2)}%;--d:${(i * 0.37 + r * 0.6).toFixed(2)}s">
+        <i class="bulb__wire"></i><span class="bulb__ic">${ic}</span><b class="bulb__n">${esc(pl.n)}</b></div>`;
+    }).join('');
+  }).join('');
 }
 
 function buildMarquee() {
@@ -347,7 +360,11 @@ buildHeroForms();
 const hdr = $('#head'); if (hdr) hdr.innerHTML = header();
 const ftr = $('#foot'); if (ftr) ftr.innerHTML = footer();
 buildMarquee();
-buildList('#channels', CHANNELS, (c) => `<div class="card rise"><h3>${esc(c.n)}</h3><p class="mt-s">${esc(c.d)}</p></div>`);
+buildGarland();
+const logoChip = (x, big) => x.logo
+  ? `<span class="chip${big ? ' chip--lg' : ''} chip--img"><img src="assets/logos/${x.logo}" alt="" loading="lazy" /></span>`
+  : `<span class="chip${big ? ' chip--lg' : ''}" style="background:${x.c}">${esc(x.s)}</span>`;
+buildList('#channels', CHANNELS, (c) => `<div class="card card--chan rise">${logoChip(c)}<h3 class="mt-s">${esc(c.n)}</h3><p class="mt-s">${esc(c.d)}</p></div>`);
 buildPlans();
 const priceRow = (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`;
 const workCard = (w) => `<div class="card rise"><h3>${esc(w.n)}</h3><p class="mt-s">${esc(w.d)}</p></div>`;
@@ -357,7 +374,11 @@ buildList('#web-prices', WEB_PRICES, priceRow);
 buildList('#web-steps', WEB_STEPS, (x) => `<div class="step rise"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`);
 buildList('#design-works', DESIGN_WORKS, workCard);
 buildList('#design-prices', DESIGN_PRICES, priceRow);
-buildList('#prices-list', PRICES, (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`);
+buildList('#prices-list', PRICES, (x) => `<div class="pcard rise">${logoChip(x, true)}
+  <b class="pcard__n">${esc(x.n)}</b>
+  <span class="pcard__d">${esc(x.d)}</span>
+  <span class="pcard__p">${x.p.toLocaleString('ru-RU').replace(/ /g, ' ')} ₽<i>${x.once ? 'один раз' : 'в месяц'}</i></span>
+</div>`);
 applyContacts();
 watchRise();
 watchHead();
