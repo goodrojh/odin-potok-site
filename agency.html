@@ -15,6 +15,7 @@
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
 <section class="hero hero--page" id="start">
+  <canvas class="stream stream--soft" data-stream="agency" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Продажи на вас —<br /><span>заявки на нас</span></h1>
@@ -34,6 +35,15 @@
   <div class="marquee" aria-hidden="true">
     <div class="marquee__row"></div>
     <div class="marquee__row"></div>
+  </div>
+</section>
+
+<!-- ПОЛОСА «ПОТОК» -->
+<section class="flowband">
+  <canvas class="stream stream--band" data-stream="agency" aria-hidden="true"></canvas>
+  <div class="wrap flowband__in">
+    <h2 class="flowband__h">Семь каналов —<br /><span>одна воронка</span></h2>
+    <p class="flowband__p">Заявки со всех площадок приходят в вашу CRM с источником — видно, какой канал приносит деньги, а какой только клики.</p>
   </div>
 </section>
 
@@ -99,6 +109,16 @@
         </ul>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- КАЛЬКУЛЯТОР -->
+<section class="section" id="calc-sec">
+  <div class="wrap">
+    <h2 class="rise">Посчитайте на своих числах</h2>
+    <p class="lead mt-s rise">Мы не знаем вашу конверсию и ваш чек — вы знаете. Поставьте свои цифры и посмотрите,
+      что реклама делает с деньгами. Это обычная арифметика, а не обещание: именно так считают и на нашей стороне.</p>
+    <div class="calc2 mt-l rise" id="calc"></div>
   </div>
 </section>
 
@@ -217,5 +237,7 @@
 
 <footer class="foot" id="foot"></footer>
 <script src="app.js"></script>
+<script src="stream.js"></script>
+<script src="widgets.js"></script>
 </body>
 </html>

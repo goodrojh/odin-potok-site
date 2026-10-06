@@ -15,6 +15,7 @@
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
 <section class="hero hero--page" id="start">
+  <canvas class="stream stream--soft" data-stream="sales" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Заявки есть,<br /><span>а продаж нет</span></h1>
@@ -39,6 +40,15 @@
   </div>
 </section>
 
+<!-- ПОЛОСА «ПОТОК» -->
+<section class="flowband">
+  <canvas class="stream stream--band" data-stream="sales" aria-hidden="true"></canvas>
+  <div class="wrap flowband__in">
+    <h2 class="flowband__h">Десять заявок —<br /><span>и сколько продаж</span></h2>
+    <p class="flowband__p">Между заявкой и деньгами стоит разговор. Его можно оставить на удачу, а можно поставить и проверять.</p>
+  </div>
+</section>
+
 <!-- ПРОБЛЕМА -->
 <section class="section section--paper">
   <div class="wrap">
@@ -53,6 +63,17 @@
       <div class="point rise"><b>Мотивация не работает</b><span>Оклад большой, процент непонятный — менеджеру невыгодно напрягаться.</span></div>
       <div class="point rise"><b>Найм — лотерея</b><span>Приходят «после курсов», уходят через месяц, собственник снова продаёт сам.</span></div>
     </div>
+  </div>
+</section>
+
+<!-- РАЗБОР ЗВОНКА -->
+<section class="section" id="call-sec">
+  <div class="wrap">
+    <h2 class="rise">Найдите, где менеджер потерял сделку</h2>
+    <p class="lead mt-s rise">Обычный входящий звонок с сайта. Менеджер вежлив, не хамит и отвечает на все вопросы —
+      и всё равно клиент уходит. Нажимайте на его реплики там, где, по-вашему, он теряет клиента.
+      Ровно это мы делаем на аудите, только по вашим записям.</p>
+    <div class="mt-l rise" id="call"></div>
   </div>
 </section>
 
@@ -207,5 +228,7 @@
 
 <footer class="foot" id="foot"></footer>
 <script src="app.js"></script>
+<script src="stream.js"></script>
+<script src="widgets.js"></script>
 </body>
 </html>

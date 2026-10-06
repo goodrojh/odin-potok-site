@@ -15,6 +15,7 @@
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
 <section class="hero hero--page" id="start">
+  <canvas class="stream stream--soft" data-stream="design" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Дизайн, который<br /><span>проверен рекламой</span></h1>
@@ -26,6 +27,15 @@
          data-title="Что нужно нарисовать?"
          data-sub="Покажем похожие работы, назовём срок и цену по вашей задаче."
          data-pick="Логотип и фирменный стиль|Дизайн сайта|Креативы для рекламы|Презентация или КП|Упаковка соцсетей|Другое"></div>
+  </div>
+</section>
+
+<!-- ПОЛОСА «ПОТОК» -->
+<section class="flowband">
+  <canvas class="stream stream--band" data-stream="design" aria-hidden="true"></canvas>
+  <div class="wrap flowband__in">
+    <h2 class="flowband__h">Двадцать макетов —<br /><span>один победитель</span></h2>
+    <p class="flowband__p">Какой сработает — не угадывает никто. Поэтому мы отдаём пакетами, запускаем и оставляем тот, у которого заявка дешевле.</p>
   </div>
 </section>
 
@@ -43,6 +53,16 @@
       <div class="card rise"><h3>Один стиль во всём</h3><p class="mt-s">Сайт, баннеры, презентация и документы собираются по одним правилам — компания выглядит целой.</p></div>
       <div class="card rise"><h3>Исходники у вас</h3><p class="mt-s">Отдаём рабочие файлы и шрифты. Смените подрядчика — ничего не придётся рисовать заново.</p></div>
     </div>
+  </div>
+</section>
+
+<!-- СЛЕПОЙ ТЕСТ -->
+<section class="section" id="ab-sec">
+  <div class="wrap">
+    <h2 class="rise">Угадайте, какой макет сработал</h2>
+    <p class="lead mt-s rise">Три пары баннеров. В каждой один обычно приносит заявки дешевле другого.
+      Выбирайте — и посмотрим, совпадёт ли ваш вкус с поведением покупателей.</p>
+    <div class="mt-l rise" id="abtest"></div>
   </div>
 </section>
 
@@ -169,5 +189,7 @@
 
 <footer class="foot" id="foot"></footer>
 <script src="app.js"></script>
+<script src="stream.js"></script>
+<script src="widgets.js"></script>
 </body>
 </html>

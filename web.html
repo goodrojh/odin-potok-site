@@ -15,6 +15,7 @@
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
 <section class="hero hero--page" id="start">
+  <canvas class="stream stream--soft" data-stream="web" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Сайт, который приносит заявки,<br /><span>а не лежит в портфолио</span></h1>
@@ -26,6 +27,15 @@
          data-title="Расскажите про сайт"
          data-sub="Посмотрим, что у вас есть сейчас, и скажем, что даст заявки быстрее всего."
          data-pick="Нужен новый сайт|Переделать существующий|Посадочная под рекламу|Интернет-магазин|Пока просто посоветоваться"></div>
+  </div>
+</section>
+
+<!-- ПОЛОСА «ПОТОК» -->
+<section class="flowband">
+  <canvas class="stream stream--band" data-stream="web" aria-hidden="true"></canvas>
+  <div class="wrap flowband__in">
+    <h2 class="flowband__h">Сотни визитов —<br /><span>одно действие</span></h2>
+    <p class="flowband__p">Задача сайта не «понравиться», а довести человека до одного понятного шага. Остальное — украшения.</p>
   </div>
 </section>
 
@@ -43,6 +53,16 @@
       <div class="card rise"><h3>Проверяем, а не угадываем</h3><p class="mt-s">После запуска смотрим записи поведения и цифры. Что мешает — правим, а не оставляем «как нарисовали».</p></div>
       <div class="card rise"><h3>Доводим до CRM</h3><p class="mt-s">Заявка не падает в почту: она попадает в вашу воронку с источником, чтобы было видно, что окупается.</p></div>
     </div>
+  </div>
+</section>
+
+<!-- ПЯТИСЕКУНДНЫЙ ТЕСТ -->
+<section class="section" id="test-sec">
+  <div class="wrap">
+    <h2 class="rise">Пройдите тест за пять секунд</h2>
+    <p class="lead mt-s rise">Это не игра, а стандартная проверка: за столько человек решает, остаться или закрыть.
+      Пройдите её сами — и станет понятно, почему «у нас красивый сайт» и «у нас есть заявки» не связаны.</p>
+    <div class="t5 mt-l rise" id="test5"></div>
   </div>
 </section>
 
@@ -172,5 +192,7 @@
 
 <footer class="foot" id="foot"></footer>
 <script src="app.js"></script>
+<script src="stream.js"></script>
+<script src="widgets.js"></script>
 </body>
 </html>

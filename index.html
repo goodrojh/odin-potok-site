@@ -14,6 +14,7 @@
 
 <main>
 <section class="hero" id="start">
+  <canvas class="stream stream--soft" data-stream="home" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Заявки, продажи и партнёры —<br /><span>один поток</span></h1>
@@ -34,6 +35,15 @@
     </svg>
     <div class="marquee__row"></div>
     <div class="marquee__row"></div>
+  </div>
+</section>
+
+<!-- ПОЛОСА «ПОТОК» -->
+<section class="flowband">
+  <canvas class="stream stream--band" data-stream="home" aria-hidden="true"></canvas>
+  <div class="wrap flowband__in">
+    <h2 class="flowband__h">Пять участков —<br /><span>один поток</span></h2>
+    <p class="flowband__p">Реклама, сайт, дизайн, продажи и партнёры сходятся в одну систему — и за результат отвечает один человек, а не пятеро.</p>
   </div>
 </section>
 
@@ -148,5 +158,7 @@
 
 <footer class="foot" id="foot"></footer>
 <script src="app.js"></script>
+<script src="stream.js"></script>
+<script src="widgets.js"></script>
 </body>
 </html>
