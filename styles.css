@@ -655,8 +655,10 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 .flowband__h { font-size: clamp(21px, 2.3vw, 31px); line-height: 1.2; letter-spacing: -.02em; color: rgba(255,255,255,.9); max-width: 24ch; margin: 0 auto; }
-.flowband__stage { position: relative; height: clamp(190px, 24vw, 310px); margin: clamp(18px, 2.4vw, 30px) 0 0; }
-.flowband .stream--band { position: absolute; inset: 0; width: 100%; height: 100%; }
+.flowband__stage { position: relative; height: clamp(170px, 21vw, 270px); margin: clamp(46px, 5vw, 78px) 0 0; }
+.flowband .stream--band { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.flowband .wrap { position: relative; }
+.flowband__h, .srcs, .flowband__stage, .flowband__cap { position: relative; z-index: 1; }
 .flowband__cap {
   margin: 0; min-height: 1.6em; font-size: clamp(15px, 1.5vw, 19px);
   color: var(--accent-2); transition: opacity .22s ease;
@@ -861,7 +863,7 @@ img { max-width: 100%; display: block; }
 .calc__ours i { font-style: normal; font-weight: 700; color: var(--ink); }
 
 /* ---------- площадки как входы в поток ---------- */
-.srcs { position: relative; z-index: 1; margin-bottom: clamp(26px, 3vw, 44px); }
+.srcs { position: relative; z-index: 1; margin-top: clamp(22px, 2.6vw, 36px); }
 .srcs__t { display: block; font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .45); margin-bottom: 18px; }
 .srcs__row { display: flex; justify-content: center; gap: clamp(10px, 2vw, 28px); flex-wrap: wrap; }
 .src { display: grid; justify-items: center; gap: 7px; animation: srcIn .6s ease both; animation-delay: var(--d); }
@@ -874,15 +876,12 @@ img { max-width: 100%; display: block; }
 .src__ic img { width: 30px; height: 30px; object-fit: contain; }
 .srcs__ltr { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 800; }
 .src i { font-style: normal; font-size: 12px; color: rgba(255, 255, 255, .62); font-weight: 600; }
-.srcs__drop { display: flex; justify-content: center; gap: clamp(10px, 2vw, 28px); margin-top: 10px; }
-.srcs__drop i { width: 52px; display: block; height: 26px; background: linear-gradient(180deg, rgba(138, 127, 224, .55), rgba(138, 127, 224, 0)); -webkit-mask: linear-gradient(90deg, transparent 47%, #000 47%, #000 53%, transparent 53%); mask: linear-gradient(90deg, transparent 47%, #000 47%, #000 53%, transparent 53%); }
 @keyframes srcIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .src { animation: none; } }
 @media (max-width: 700px) {
   .src__ic { width: 42px; height: 42px; border-radius: 14px; }
   .src__ic img { width: 24px; height: 24px; }
   .src i { display: none; }
-  .srcs__drop { display: none; }
 }
 
 /* ---------- подарок в прайсе ---------- */

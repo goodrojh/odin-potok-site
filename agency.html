@@ -36,11 +36,10 @@
 <!-- ПОЛОСА «ПОТОК» -->
 <section class="flowband">
   <div class="wrap">
-    <div class="srcs" id="srcs"></div>
+    <canvas class="stream stream--band" data-flow="КЛИКИ|ЗАЯВКИ|ПРОДАЖИ|₽" data-caps="За них вы платите площадкам|До вас доходит часть|Из них закрывается часть|Ради этого всё и затевалось" aria-hidden="true"></canvas>
     <h2 class="flowband__h rise">Между кликом и деньгами теряется почти всё</h2>
-    <div class="flowband__stage">
-      <canvas class="stream stream--band" data-flow="КЛИКИ|ЗАЯВКИ|ПРОДАЖИ|₽" data-caps="За них вы платите площадкам|До вас доходит часть|Из них закрывается часть|Ради этого всё и затевалось" aria-hidden="true"></canvas>
-    </div>
+    <div class="srcs" id="srcs"></div>
+    <div class="flowband__stage"></div>
     <p class="flowband__cap" data-flow-cap>&nbsp;</p>
   </div>
 </section>

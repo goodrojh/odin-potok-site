@@ -278,8 +278,7 @@ function buildSources() {
         ? `<img src="assets/logos/${pl.logo}" alt="${esc(pl.n)}" loading="lazy" />`
         : `<span class="srcs__ltr" style="background:${pl.c}">${esc(pl.s)}</span>`;
       return `<span class="src" style="--d:${(i * 0.12).toFixed(2)}s"><span class="src__ic">${ic}</span><i>${esc(pl.n)}</i></span>`;
-    }).join('')}</div>
-    <div class="srcs__drop" aria-hidden="true">${list.map(() => '<i></i>').join('')}</div>`;
+    }).join('')}</div>`;
 }
 
 /** Витрина сделанных сайтов. Пусто — честно говорим об этом, а не прячем раздел. */
