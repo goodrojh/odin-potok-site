@@ -675,34 +675,6 @@ img { max-width: 100%; display: block; }
 /* Привлечение заявок                                                 */
 /* ================================================================== */
 
-/* ---------- гирлянда из логотипов ---------- */
-
-.garland { position: absolute; top: 0; left: 0; right: 0; height: 46%; z-index: 0; pointer-events: none; }
-.garland__in { position: relative; height: 100%; }
-.garland__wire { position: absolute; inset: 0; width: 100%; height: 100%; }
-.garland__wire path { fill: none; stroke: rgba(99, 86, 200, .3); stroke-width: 1.6; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.garland__bulbs { position: absolute; inset: 0; }
-.bulb {
-  position: absolute; transform: translate(-50%, 0); display: grid; justify-items: center; gap: 5px;
-  animation: sway 5.2s ease-in-out infinite; animation-delay: var(--d);
-  transform-origin: 50% -6px;
-}
-.bulb__wire { width: 1px; height: 13px; background: rgba(99, 86, 200, .4); }
-.bulb__ic {
-  width: 46px; height: 46px; border-radius: 15px; background: #fff; display: grid; place-items: center;
-  box-shadow: 0 10px 22px rgba(99, 86, 200, .22), 0 0 0 1px rgba(99, 86, 200, .08);
-}
-.bulb__ic img { width: 27px; height: 27px; object-fit: contain; }
-.bulb__ic > span { width: 27px; height: 27px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-size: 10px; font-weight: 800; }
-.bulb__n { font-size: 11.5px; color: var(--dim); white-space: nowrap; font-weight: 600; opacity: .85; }
-@keyframes sway { 0%, 100% { transform: translate(-50%, 0) rotate(-3.5deg); } 50% { transform: translate(-50%, 0) rotate(3.5deg); } }
-@media (prefers-reduced-motion: reduce) { .bulb { animation: none; } }
-@media (max-width: 900px) {
-  .bulb__ic { width: 38px; height: 38px; border-radius: 12px; }
-  .bulb__ic img, .bulb__ic > span { width: 22px; height: 22px; }
-  .bulb__n { display: none; }
-}
-
 /* ---------- схема «как обычно / как у нас» ---------- */
 .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
 .vs__col { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-soft); }
@@ -849,12 +821,6 @@ img { max-width: 100%; display: block; }
   .qa__pill { width: 100%; border-radius: 18px; min-height: 0; }
 }
 
-/* Гирлянда проходит за текстом, поэтому заголовку нужен светлый ореол —
-   иначе логотип, попавший под букву, съедает контур. */
-.hero--garland h1 { text-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px rgba(255,255,255,.8); }
-.hero--garland .lead, .hero--garland .hero__note { text-shadow: 0 0 14px #fff, 0 0 26px #fff; }
-.hero--garland .bulb { opacity: .92; }
-
 /* ---------- схема «как обычно / как у нас» ---------- */
 .dg { margin: 22px 0 6px; }
 .dg__row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
@@ -893,3 +859,58 @@ img { max-width: 100%; display: block; }
 .calc__ours b { display: block; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
 .calc__ours span { font-size: 14.5px; color: var(--dim); line-height: 1.55; }
 .calc__ours i { font-style: normal; font-weight: 700; color: var(--ink); }
+
+/* ---------- площадки как входы в поток ---------- */
+.srcs { position: relative; z-index: 1; margin-bottom: clamp(26px, 3vw, 44px); }
+.srcs__t { display: block; font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .45); margin-bottom: 18px; }
+.srcs__row { display: flex; justify-content: center; gap: clamp(10px, 2vw, 28px); flex-wrap: wrap; }
+.src { display: grid; justify-items: center; gap: 7px; animation: srcIn .6s ease both; animation-delay: var(--d); }
+.src__ic {
+  width: 52px; height: 52px; border-radius: 17px; background: #fff; display: grid; place-items: center;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .35);
+  transition: transform .2s ease;
+}
+.src:hover .src__ic { transform: translateY(-4px); }
+.src__ic img { width: 30px; height: 30px; object-fit: contain; }
+.srcs__ltr { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 800; }
+.src i { font-style: normal; font-size: 12px; color: rgba(255, 255, 255, .62); font-weight: 600; }
+.srcs__drop { display: flex; justify-content: center; gap: clamp(10px, 2vw, 28px); margin-top: 10px; }
+.srcs__drop i { width: 52px; display: block; height: 26px; background: linear-gradient(180deg, rgba(138, 127, 224, .55), rgba(138, 127, 224, 0)); -webkit-mask: linear-gradient(90deg, transparent 47%, #000 47%, #000 53%, transparent 53%); mask: linear-gradient(90deg, transparent 47%, #000 47%, #000 53%, transparent 53%); }
+@keyframes srcIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .src { animation: none; } }
+@media (max-width: 700px) {
+  .src__ic { width: 42px; height: 42px; border-radius: 14px; }
+  .src__ic img { width: 24px; height: 24px; }
+  .src i { display: none; }
+  .srcs__drop { display: none; }
+}
+
+/* ---------- подарок в прайсе ---------- */
+.gift {
+  margin-top: 22px; background: linear-gradient(135deg, var(--accent-soft), #fff);
+  border: 1px solid rgba(99, 86, 200, .22); border-radius: var(--radius);
+  padding: 22px 26px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  box-shadow: var(--shadow-soft);
+}
+.gift__ic { flex: none; width: 54px; height: 54px; border-radius: 17px; background: var(--accent); color: #fff; display: grid; place-items: center; box-shadow: 0 10px 24px rgba(99, 86, 200, .3); }
+.gift__t { flex: 1 1 320px; }
+.gift__t b { display: block; font-size: 18px; margin-bottom: 4px; }
+.gift__t span { font-size: 15px; color: var(--dim); line-height: 1.55; }
+.gift .btn { flex: none; }
+@media (max-width: 620px) { .gift { flex-direction: column; align-items: flex-start; } .gift .btn { width: 100%; text-align: center; } }
+
+/* ---------- витрина сайтов ---------- */
+.works { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.work { display: grid; gap: 4px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-soft); color: inherit; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+a.work:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--accent); }
+.work__pic { display: block; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; background: var(--paper); display: grid; place-items: center; }
+.work__pic img { width: 100%; height: 100%; object-fit: cover; }
+.work__noimg { font-size: 40px; font-weight: 800; color: var(--accent); opacity: .35; }
+.work__n { font-size: 17px; margin-top: 12px; }
+.work__d { font-size: 14.5px; color: var(--dim); line-height: 1.45; }
+.work__go { margin-top: 8px; font-size: 14.5px; font-weight: 600; color: var(--accent); }
+.works__soon { grid-column: 1 / -1; background: #fff; border: 1px dashed var(--line); border-radius: var(--radius); padding: clamp(26px, 3vw, 40px); text-align: center; }
+.works__soon b { display: block; font-size: 20px; }
+.works__soon p { margin: 10px auto 20px; font-size: 16px; color: var(--dim); line-height: 1.6; max-width: 56ch; }
+@media (max-width: 960px) { .works { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .works { grid-template-columns: 1fr; } }

@@ -14,7 +14,7 @@
 
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
-<section class="hero hero--page hero--garland" id="start">
+<section class="hero hero--page" id="start">
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Продажи на вас —<br /><span>заявки на нас</span></h1>
@@ -31,20 +31,12 @@
          data-pick="Реклама идёт, заявок мало|Рекламы пока нет|Меняем подрядчика|Нужна сквозная аналитика|Пока просто посоветоваться"></div>
   </div>
 
-  <div class="garland" aria-hidden="true">
-   <div class="wrap garland__in">
-    <svg class="garland__wire" viewBox="0 0 1200 300" preserveAspectRatio="none">
-      <path d="M-30 46 C 230 186, 470 186, 690 100 S 1030 20, 1230 112" />
-      <path d="M-30 136 C 210 258, 500 250, 740 170 S 1060 108, 1230 196" />
-    </svg>
-    <div class="garland__bulbs" id="garland"></div>
-   </div>
-  </div>
 </section>
 
 <!-- ПОЛОСА «ПОТОК» -->
 <section class="flowband">
   <div class="wrap">
+    <div class="srcs" id="srcs"></div>
     <h2 class="flowband__h rise">Между кликом и деньгами теряется почти всё</h2>
     <div class="flowband__stage">
       <canvas class="stream stream--band" data-flow="КЛИКИ|ЗАЯВКИ|ПРОДАЖИ|₽" data-caps="За них вы платите площадкам|До вас доходит часть|Из них закрывается часть|Ради этого всё и затевалось" aria-hidden="true"></canvas>
@@ -185,7 +177,20 @@
       </div>
       <a class="btn" href="#start">Обсудить пакет</a>
     </div>
-    <p class="form__note mt-m rise">Сайт в подарок при работе от трёх месяцев — собираем посадочную под ваш оффер и отдаём вместе с доступами. Каналов при этом может быть и один.</p>
+    <div class="gift rise">
+      <span class="gift__ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="9" width="18" height="12" rx="2" /><path d="M3 13h18M12 9v12" />
+          <path d="M12 9S10.5 4 8 4a2.5 2.5 0 0 0 0 5h4zM12 9s1.5-5 4-5a2.5 2.5 0 0 1 0 5h-4z" />
+        </svg>
+      </span>
+      <div class="gift__t">
+        <b>Сайт в подарок при работе от трёх месяцев</b>
+        <span>Собираем посадочную под ваш оффер, подключаем аналитику и формы, отдаём вместе с доступами.
+          Каналов при этом может быть и один.</span>
+      </div>
+      <a class="btn btn--ghost" href="web.html#works">Примеры наших сайтов</a>
+    </div>
   </div>
 </section>
 

@@ -94,6 +94,13 @@ const WEB_PRICES = [
   { n: 'Поддержка и правки', d: 'часы на правки, мониторинг, обновления', p: 'от 20 000 ₽/мес' },
 ];
 
+/**
+ * Примеры сделанных сайтов. Добавляйте сюда — раздел появится сам:
+ *   { n: 'Название', d: 'Ниша, что сделали', url: 'https://…', img: 'works/имя.png' }
+ * Картинку кладите в site/assets/works/. Без img покажем аккуратную заглушку.
+ */
+const WORKS = [];
+
 /** Этапы работы над сайтом. */
 const WEB_STEPS = [
   { t: 'Разбираемся', d: 'Кто покупает, за что платит, что спрашивает перед покупкой. Смотрим конкурентов и то, что уже есть у вас в аналитике.' },
@@ -257,28 +264,47 @@ function platformCard(p) {
 }
 
 /**
- * Гирлянда: логотипы площадок висят на двух дугах. Точки берём прямо
- * с кривой, поэтому «лампочки» сидят на проводе, а не рядом с ним.
+ * Площадки как входы в поток: ряд логотипов в тёмной полосе, из каждого
+ * вниз уходит ниточка к облаку точек. Логотипы больше не лежат под
+ * текстом — там они только мешали читать.
  */
-function buildGarland() {
-  const box = document.getElementById('garland');
+function buildSources() {
+  const box = document.getElementById('srcs');
   if (!box) return;
-  const svg = box.parentElement.querySelector('.garland__wire');
-  const wires = [...svg.querySelectorAll('path')];
-  const VB = { w: 1200, h: 300 };
-  const rows = [PLATFORMS.slice(0, 5), PLATFORMS.slice(5, 10)];
-  box.innerHTML = wires.map((wire, r) => {
-    const list = rows[r] ?? rows[0];
-    const len = wire.getTotalLength();
-    return list.map((pl, i) => {
-      const shift = r ? 0.12 : 0.62;            // вторую дугу смещаем, иначе подписи наезжают
-      const at = wire.getPointAtLength(len * ((i + shift) / (list.length + 0.2)));
+  const list = PLATFORMS.slice(0, 7);
+  box.innerHTML = `<span class="srcs__t">Ведём эти площадки</span>
+    <div class="srcs__row">${list.map((pl, i) => {
       const ic = pl.logo
         ? `<img src="assets/logos/${pl.logo}" alt="${esc(pl.n)}" loading="lazy" />`
-        : `<span style="background:${pl.c}">${esc(pl.s)}</span>`;
-      return `<div class="bulb" style="left:${(at.x / VB.w * 100).toFixed(2)}%;top:${(at.y / VB.h * 100).toFixed(2)}%;--d:${(i * 0.37 + r * 0.6).toFixed(2)}s">
-        <i class="bulb__wire"></i><span class="bulb__ic">${ic}</span><b class="bulb__n">${esc(pl.n)}</b></div>`;
-    }).join('');
+        : `<span class="srcs__ltr" style="background:${pl.c}">${esc(pl.s)}</span>`;
+      return `<span class="src" style="--d:${(i * 0.12).toFixed(2)}s"><span class="src__ic">${ic}</span><i>${esc(pl.n)}</i></span>`;
+    }).join('')}</div>
+    <div class="srcs__drop" aria-hidden="true">${list.map(() => '<i></i>').join('')}</div>`;
+}
+
+/** Витрина сделанных сайтов. Пусто — честно говорим об этом, а не прячем раздел. */
+function buildWorks() {
+  const box = document.getElementById('works-grid');
+  if (!box) return;
+  if (!WORKS.length) {
+    box.innerHTML = `<div class="works__soon">
+      <b>Витрину собираем</b>
+      <p>Работы есть, но показывать их россыпью ссылок неправильно — готовим нормальные карточки.
+        Напишите, и пришлём примеры по вашей нише прямо сейчас.</p>
+      <a class="btn" href="#start">Попросить примеры</a>
+    </div>`;
+    return;
+  }
+  box.innerHTML = WORKS.map((w) => {
+    const pic = w.img
+      ? `<img src="assets/${w.img}" alt="${esc(w.n)}" loading="lazy" />`
+      : `<span class="work__noimg">${esc(w.n.slice(0, 1))}</span>`;
+    const inner = `<span class="work__pic">${pic}</span>
+      <b class="work__n">${esc(w.n)}</b>
+      <span class="work__d">${esc(w.d || '')}</span>`;
+    return w.url
+      ? `<a class="work rise" href="${esc(w.url)}" target="_blank" rel="noopener">${inner}<span class="work__go">Открыть сайт</span></a>`
+      : `<div class="work rise">${inner}</div>`;
   }).join('');
 }
 
@@ -378,7 +404,7 @@ buildHeroForms();
 const hdr = $('#head'); if (hdr) hdr.innerHTML = header();
 const ftr = $('#foot'); if (ftr) ftr.innerHTML = footer();
 buildMarquee();
-buildGarland();
+buildSources();
 const logoChip = (x, big) => x.logo
   ? `<span class="chip${big ? ' chip--lg' : ''} chip--img"><img src="assets/logos/${x.logo}" alt="" loading="lazy" /></span>`
   : `<span class="chip${big ? ' chip--lg' : ''}" style="background:${x.c}">${esc(x.s)}</span>`;
@@ -388,6 +414,7 @@ const priceRow = (p) => `<div class="price-row"><span><span class="price-row__n"
 const workCard = (w) => `<div class="card rise"><h3>${esc(w.n)}</h3><p class="mt-s">${esc(w.d)}</p></div>`;
 buildList('#sales-prices', SALES_PRICES, priceRow);
 buildList('#web-works', WEB_WORKS, workCard);
+buildWorks();
 buildList('#web-prices', WEB_PRICES, priceRow);
 buildList('#web-steps', WEB_STEPS, (x) => `<div class="step rise"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`);
 buildList('#design-works', DESIGN_WORKS, workCard);
