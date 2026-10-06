@@ -31,6 +31,10 @@
          data-pick="Реклама идёт, заявок мало|Рекламы пока нет|Меняем подрядчика|Нужна сквозная аналитика|Пока просто посоветоваться"></div>
   </div>
 
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__row"></div>
+    <div class="marquee__row"></div>
+  </div>
 </section>
 
 <!-- ПОЛОСА «ПОТОК» -->
@@ -38,7 +42,6 @@
   <div class="wrap">
     <canvas class="stream stream--band" data-flow="КЛИКИ|ЗАЯВКИ|ПРОДАЖИ|₽" data-caps="За них вы платите площадкам|До вас доходит часть|Из них закрывается часть|Ради этого всё и затевалось" aria-hidden="true"></canvas>
     <h2 class="flowband__h rise">Между кликом и деньгами теряется почти всё</h2>
-    <div class="srcs" id="srcs"></div>
     <div class="flowband__stage"></div>
     <p class="flowband__cap" data-flow-cap>&nbsp;</p>
   </div>

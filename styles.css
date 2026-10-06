@@ -655,10 +655,10 @@ img { max-width: 100%; display: block; }
   text-align: center;
 }
 .flowband__h { font-size: clamp(21px, 2.3vw, 31px); line-height: 1.2; letter-spacing: -.02em; color: rgba(255,255,255,.9); max-width: 24ch; margin: 0 auto; }
-.flowband__stage { position: relative; height: clamp(170px, 21vw, 270px); margin: clamp(46px, 5vw, 78px) 0 0; }
+.flowband__stage { position: relative; height: clamp(180px, 22vw, 290px); margin: clamp(16px, 2vw, 26px) 0 0; }
 .flowband .stream--band { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
 .flowband .wrap { position: relative; }
-.flowband__h, .srcs, .flowband__stage, .flowband__cap { position: relative; z-index: 1; }
+.flowband__h, .flowband__stage, .flowband__cap { position: relative; z-index: 1; }
 .flowband__cap {
   margin: 0; min-height: 1.6em; font-size: clamp(15px, 1.5vw, 19px);
   color: var(--accent-2); transition: opacity .22s ease;
@@ -861,28 +861,6 @@ img { max-width: 100%; display: block; }
 .calc__ours b { display: block; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
 .calc__ours span { font-size: 14.5px; color: var(--dim); line-height: 1.55; }
 .calc__ours i { font-style: normal; font-weight: 700; color: var(--ink); }
-
-/* ---------- площадки как входы в поток ---------- */
-.srcs { position: relative; z-index: 1; margin-top: clamp(22px, 2.6vw, 36px); }
-.srcs__t { display: block; font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .45); margin-bottom: 18px; }
-.srcs__row { display: flex; justify-content: center; gap: clamp(10px, 2vw, 28px); flex-wrap: wrap; }
-.src { display: grid; justify-items: center; gap: 7px; animation: srcIn .6s ease both; animation-delay: var(--d); }
-.src__ic {
-  width: 52px; height: 52px; border-radius: 17px; background: #fff; display: grid; place-items: center;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, .35);
-  transition: transform .2s ease;
-}
-.src:hover .src__ic { transform: translateY(-4px); }
-.src__ic img { width: 30px; height: 30px; object-fit: contain; }
-.srcs__ltr { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 800; }
-.src i { font-style: normal; font-size: 12px; color: rgba(255, 255, 255, .62); font-weight: 600; }
-@keyframes srcIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .src { animation: none; } }
-@media (max-width: 700px) {
-  .src__ic { width: 42px; height: 42px; border-radius: 14px; }
-  .src__ic img { width: 24px; height: 24px; }
-  .src i { display: none; }
-}
 
 /* ---------- подарок в прайсе ---------- */
 .gift {

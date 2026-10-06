@@ -59,8 +59,6 @@
     let w = 0; let h = 0; let dpr = 1;
     let shapes = [];          // координаты точек для каждого слова
     let pts = [];             // точки самого слова
-    let flow = [];            // точки, летящие из площадок в слово
-    let srcs = [];            // откуда они вылетают
     let area = { y: 0, h: 0 };// куда ставим слово
     let step = 0; let t0 = 0; let phase = 'hold';
     let raf = 0; let running = false; let visible = true;
@@ -88,26 +86,15 @@
       return out;
     }
 
-    /** Где стоит слово и откуда вылетают точки — берём из вёрстки. */
+    /** Где стоит слово — берём из вёрстки, чтобы холст и разметка не разъезжались. */
     function measure(box) {
-      const band = host.closest('.flowband');
-      const stage = band && band.querySelector('.flowband__stage');
+      const stage = host.closest('.flowband') && host.closest('.flowband').querySelector('.flowband__stage');
       if (stage) {
         const r = stage.getBoundingClientRect();
         area = { y: r.top - box.top, h: r.height };
       } else {
         area = { y: h * 0.4, h: h * 0.55 };
       }
-      const chips = [...(band ? band.querySelectorAll('.src') : [])];
-      srcs = chips.map((n) => {
-        const r = n.getBoundingClientRect();
-        return { x: r.left - box.left + r.width / 2, y: r.top - box.top + r.height + 6 };
-      });
-      if (!srcs.length) {                      // страницы без площадок: сыплем сверху
-        const n = 7;
-        srcs = Array.from({ length: n }, (_, i) => ({ x: w * (i + 0.5) / n, y: Math.max(6, area.y - 70) }));
-      }
-      flow = [];
     }
 
     function build() {
@@ -166,46 +153,8 @@
       });
     }
 
-    /** Точка из площадки: падает вниз и по дороге сходится к центру. */
-    function born(spread) {
-      const src = srcs[(Math.random() * srcs.length) | 0];
-      const run = Math.max(40, area.y + area.h * 0.22 - src.y);
-      return {
-        x: src.x + (Math.random() - 0.5) * 26,
-        y: src.y + (spread ? Math.random() * run : Math.random() * 8),
-        y0: src.y,
-        vy: 0.7 + Math.random() * 0.9,
-        s: 4 + Math.random() * 3.5,
-        g: (Math.random() * SPRITES.length) | 0,
-        a: 0,
-      };
-    }
-
-    function flowStep() {
-      const want = srcs.length * 16;
-      while (flow.length < want) flow.push(born(true));
-      const mid = w / 2;
-      const top = area.y + area.h * 0.22;        // граница, за которой точка «входит» в слово
-      for (const f of flow) {
-        const t = Math.max(0, Math.min(1, (f.y - f.y0) / Math.max(1, top - f.y0)));
-        f.vy += 0.01;
-        f.y += f.vy;
-        // Сначала семь отдельных струй, и только ближе к слову они сходятся.
-        f.x += (mid - f.x) * (0.0015 + t * t * 0.055);
-        if (f.a < 1) f.a = Math.min(1, f.a + 0.08);
-        if (f.y > top) f.a -= 0.12;
-        if (f.a <= 0 || f.y > h) Object.assign(f, born(false));
-      }
-    }
-
     function draw() {
       ctx.clearRect(0, 0, w, h);
-      for (const f of flow) {
-        if (f.a <= 0.02) continue;
-        ctx.globalAlpha = f.a * 0.75;
-        ctx.drawImage(SPRITES[f.g], f.x - f.s / 2, f.y - f.s / 2, f.s, f.s);
-      }
-      ctx.globalAlpha = 1;
       for (const p of pts) {
         if (p.a <= 0.02) continue;
         const s = p.s;
@@ -244,7 +193,6 @@
           p.y += dy * f * 0.09;
         }
       }
-      flowStep();
       draw();
       if (running) raf = requestAnimationFrame(frame);
     }

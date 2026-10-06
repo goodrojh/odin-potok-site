@@ -263,50 +263,6 @@ function platformCard(p) {
   return `<div class="plat">${ic}<div class="plat__n">${esc(p.n)}</div><div class="plat__t">${esc(p.t)}</div></div>`;
 }
 
-/**
- * Площадки как входы в поток: ряд логотипов в тёмной полосе, из каждого
- * вниз уходит ниточка к облаку точек. Логотипы больше не лежат под
- * текстом — там они только мешали читать.
- */
-function buildSources() {
-  const box = document.getElementById('srcs');
-  if (!box) return;
-  const list = PLATFORMS.slice(0, 7);
-  box.innerHTML = `<span class="srcs__t">Ведём эти площадки</span>
-    <div class="srcs__row">${list.map((pl, i) => {
-      const ic = pl.logo
-        ? `<img src="assets/logos/${pl.logo}" alt="${esc(pl.n)}" loading="lazy" />`
-        : `<span class="srcs__ltr" style="background:${pl.c}">${esc(pl.s)}</span>`;
-      return `<span class="src" style="--d:${(i * 0.12).toFixed(2)}s"><span class="src__ic">${ic}</span><i>${esc(pl.n)}</i></span>`;
-    }).join('')}</div>`;
-}
-
-/** Витрина сделанных сайтов. Пусто — честно говорим об этом, а не прячем раздел. */
-function buildWorks() {
-  const box = document.getElementById('works-grid');
-  if (!box) return;
-  if (!WORKS.length) {
-    box.innerHTML = `<div class="works__soon">
-      <b>Витрину собираем</b>
-      <p>Работы есть, но показывать их россыпью ссылок неправильно — готовим нормальные карточки.
-        Напишите, и пришлём примеры по вашей нише прямо сейчас.</p>
-      <a class="btn" href="#start">Попросить примеры</a>
-    </div>`;
-    return;
-  }
-  box.innerHTML = WORKS.map((w) => {
-    const pic = w.img
-      ? `<img src="assets/${w.img}" alt="${esc(w.n)}" loading="lazy" />`
-      : `<span class="work__noimg">${esc(w.n.slice(0, 1))}</span>`;
-    const inner = `<span class="work__pic">${pic}</span>
-      <b class="work__n">${esc(w.n)}</b>
-      <span class="work__d">${esc(w.d || '')}</span>`;
-    return w.url
-      ? `<a class="work rise" href="${esc(w.url)}" target="_blank" rel="noopener">${inner}<span class="work__go">Открыть сайт</span></a>`
-      : `<div class="work rise">${inner}</div>`;
-  }).join('');
-}
-
 function buildMarquee() {
   const rows = document.querySelectorAll('.marquee__row');
   if (!rows.length) return;
@@ -403,7 +359,6 @@ buildHeroForms();
 const hdr = $('#head'); if (hdr) hdr.innerHTML = header();
 const ftr = $('#foot'); if (ftr) ftr.innerHTML = footer();
 buildMarquee();
-buildSources();
 const logoChip = (x, big) => x.logo
   ? `<span class="chip${big ? ' chip--lg' : ''} chip--img"><img src="assets/logos/${x.logo}" alt="" loading="lazy" /></span>`
   : `<span class="chip${big ? ' chip--lg' : ''}" style="background:${x.c}">${esc(x.s)}</span>`;
