@@ -44,6 +44,24 @@ const CHANNELS = [
   { n: 'Сквозная аналитика', c: '#1e1a36', s: '∑', d: 'Один отчёт: сколько заявок, по какой цене и что из этого стало деньгами. Без сведения таблиц вручную.' },
 ];
 
+/**
+ * Ориентиры по нишам для расчёта бюджета: цена заявки и доля заявок,
+ * которые доходят до сделки. Это средние по рынку цифры — на разборе
+ * считаем по вашим. Правятся здесь.
+ */
+const NICHES = [
+  { n: 'Ремонт и отделка',      cpl: 1100, cr: 12, ch: 'Яндекс Директ, Авито, 2ГИС' },
+  { n: 'Мебель на заказ',       cpl: 900,  cr: 15, ch: 'Авито, Яндекс Директ, ВКонтакте' },
+  { n: 'Окна, двери, потолки',  cpl: 750,  cr: 18, ch: 'Авито, Яндекс Директ, 2ГИС' },
+  { n: 'Строительство домов',   cpl: 2200, cr: 8,  ch: 'Яндекс Директ, ВКонтакте, Telegram Ads' },
+  { n: 'Медицина и клиники',    cpl: 800,  cr: 20, ch: 'Яндекс Директ, 2ГИС и Карты' },
+  { n: 'Услуги для бизнеса',    cpl: 1800, cr: 10, ch: 'Яндекс Директ, Telegram Ads, DMP One' },
+  { n: 'Оборудование и B2B',    cpl: 3000, cr: 7,  ch: 'Яндекс Директ, Telegram Ads' },
+  { n: 'Автоуслуги и сервис',   cpl: 500,  cr: 22, ch: 'Авито, 2ГИС, Яндекс Директ' },
+  { n: 'Обучение и курсы',      cpl: 600,  cr: 12, ch: 'ВКонтакте, Telegram Ads, Яндекс Директ' },
+  { n: 'Недвижимость',          cpl: 2500, cr: 6,  ch: 'Яндекс Директ, ВКонтакте, Telegram Ads' },
+];
+
 /** Прайс агентства: карточка с логотипом площадки и ценой. */
 const PRICES = [
   { n: 'Яндекс Директ', logo: 'yandex.png', d: 'поиск, РСЯ, ретаргетинг', p: 35000 },
@@ -141,16 +159,16 @@ function header() {
     { href: 'platform.html', t: 'Учёт партнёрки', k: 'platform' },
   ];
   // На внутренних страницах форма уже в первом экране — зовём к ней, а не на другую страницу.
-  const cta = PAGE === 'platform' ? `<a class="btn btn--sm" data-plush href="#trial"><span>Попробовать бесплатно</span></a>`
-    : PAGE === 'home' ? `<a class="btn btn--sm" data-plush href="#start"><span>Обсудить задачу</span></a>`
-    : `<a class="btn btn--sm" data-plush href="#start"><span>Оставить заявку</span></a>`;
+  const cta = PAGE === 'platform' ? `<a class="btn btn--sm" href="#trial">Попробовать бесплатно</a>`
+    : PAGE === 'home' ? `<a class="btn btn--sm" href="#start">Обсудить задачу</a>`
+    : `<a class="btn btn--sm" href="#start">Оставить заявку</a>`;
   return `<div class="wrap head__in">
     <a class="brand" href="index.html"><img src="assets/logo-mark.png" alt="" /> Один поток</a>
     <nav class="nav" id="nav">
       ${links.map((l) => `<a href="${l.href}" class="${l.k === PAGE ? 'is-active' : ''}">${l.t}</a>`).join('')}
     </nav>
     <div class="head__cta">
-      <a class="btn btn--ghost btn--sm" data-plush href="${CONTACTS.cabinet}" target="_blank" rel="noopener"><span>Войти</span></a>
+      <a class="btn btn--ghost btn--sm" href="${CONTACTS.cabinet}" target="_blank" rel="noopener">Войти</a>
       ${cta}
       <button class="burger" id="burger" aria-label="Меню">☰</button>
     </div>

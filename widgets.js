@@ -14,6 +14,12 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const rub = (n) => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₽';
   const num = (n) => Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ');
+  const plural = (n, one, few, many) => {
+    const a = Math.abs(Math.round(n)) % 100; const b = a % 10;
+    if (a > 10 && a < 20) return many;
+    if (b > 1 && b < 5) return few;
+    return b === 1 ? one : many;
+  };
 
   /* ================================================================ */
   /* 1. Реклама: калькулятор на ваших числах                          */
@@ -23,26 +29,28 @@
   (function calc() {
     const root = el('calc');
     if (!root) return;
-    // Ползунки вместо полей: цифру можно не вводить, а нащупать — и сразу
-    // видно, что двигается сильнее всего.
-    const F = [
-      { k: 'budget', t: 'Бюджет на рекламу', v: 150000, min: 30000, max: 1000000, step: 10000, u: '₽/мес' },
-      { k: 'cpc', t: 'Цена клика', v: 45, min: 5, max: 400, step: 5, u: '₽' },
-      { k: 'cr1', t: 'Из кликов в заявки', v: 4, min: 0.5, max: 20, step: 0.5, u: '%' },
-      { k: 'cr2', t: 'Из заявок в продажи', v: 20, min: 2, max: 80, step: 1, u: '%' },
-      { k: 'check', t: 'Средний чек', v: 60000, min: 5000, max: 2000000, step: 5000, u: '₽' },
-      { k: 'margin', t: 'Маржа в чеке', v: 30, min: 5, max: 90, step: 1, u: '%' },
-    ];
-    const st = Object.fromEntries(F.map((f) => [f.k, f.v]));
-    const show = (f) => (f.u === '%' ? st[f.k] : num(st[f.k])) + ' ' + f.u;
+    if (typeof NICHES === 'undefined') return;
+
+    // Спрашиваем только то, что предприниматель знает про себя: нишу, чек
+    // и сколько продаж ему нужно. Цену заявки и доходимость до сделки
+    // подставляем мы — за этим к агентству и приходят.
+    const st = { i: 0, check: 60000, sales: 10 };
 
     root.innerHTML = `
       <div class="calc__in">
-        ${F.map((f) => `<label class="calc__f">
-          <span>${f.t}<b class="calc__v" id="cv_${f.k}">${show(f)}</b></span>
-          <input type="range" id="cf_${f.k}" value="${f.v}" min="${f.min}" max="${f.max}" step="${f.step}" />
-        </label>`).join('')}
-        <p class="calc__hint">Числа ваши — арифметика наша. Это не прогноз и не обещание: так считают до запуска, чтобы решить, стоит ли он того.</p>
+        <label class="calc__f">
+          <span>Чем занимаетесь</span>
+          <select id="cfNiche" class="calc__sel">${NICHES.map((x, i) => `<option value="${i}">${esc(x.n)}</option>`).join('')}</select>
+        </label>
+        <label class="calc__f">
+          <span>Средний чек<b class="calc__v" id="cvCheck"></b></span>
+          <input type="range" id="cfCheck" min="5000" max="1500000" step="5000" value="${st.check}" />
+        </label>
+        <label class="calc__f">
+          <span>Сколько продаж нужно в месяц<b class="calc__v" id="cvSales"></b></span>
+          <input type="range" id="cfSales" min="1" max="120" step="1" value="${st.sales}" />
+        </label>
+        <div class="calc__ours" id="calcOurs"></div>
       </div>
       <div class="calc__out">
         <div class="calc__hero" id="calcHero"></div>
@@ -52,25 +60,24 @@
       </div>`;
 
     function draw() {
-      const clicks = st.cpc > 0 ? st.budget / st.cpc : 0;
-      const leads = clicks * st.cr1 / 100;
-      const sales = leads * st.cr2 / 100;
-      const revenue = sales * st.check;
-      const gross = revenue * st.margin / 100;
-      const profit = gross - st.budget;
-      const cpl = leads > 0 ? st.budget / leads : 0;
-      const cps = sales > 0 ? st.budget / sales : 0;
-      const romi = st.budget > 0 ? profit / st.budget * 100 : 0;
+      const nz = NICHES[st.i];
+      const leads = Math.ceil(st.sales / (nz.cr / 100));
+      const budget = Math.round(leads * nz.cpl / 1000) * 1000;   // круглая цифра читается лучше
+      const revenue = st.sales * st.check;
+      const share = revenue > 0 ? budget / revenue * 100 : 0;
+      const cps = st.sales > 0 ? budget / st.sales : 0;
 
-      const hero = el('calcHero');
-      hero.className = 'calc__hero' + (profit < 0 ? ' is-bad' : '');
-      hero.innerHTML = `<b>${profit >= 0 ? rub(profit) : '−' + rub(-profit)}</b>
-        <span>${profit >= 0 ? 'остаётся в месяц после затрат на рекламу' : 'столько реклама забирает сверх того, что приносит'}</span>`;
+      el('calcOurs').innerHTML = `<b>Это мы подставляем за вас</b>
+        <span>Заявка в нише «${esc(nz.n)}» — около <i>${rub(nz.cpl)}</i>, до сделки доходит <i>${nz.cr}%</i> заявок.
+        Средние цифры по рынку: на разборе пересчитаем по вашим.</span>`;
+
+      el('calcHero').className = 'calc__hero';
+      el('calcHero').innerHTML = `<b>${rub(budget)}</b>
+        <span>бюджет на рекламу в месяц, чтобы получать ${num(st.sales)} ${plural(st.sales, 'продажу', 'продажи', 'продаж')}</span>`;
 
       const rows = [
-        { t: 'Кликов', v: num(clicks), w: 100 },
-        { t: 'Заявок', v: num(leads), w: Math.max(5, st.cr1 * 4) },
-        { t: 'Продаж', v: num(sales), w: Math.max(2.5, st.cr1 * st.cr2 / 100 * 4) },
+        { t: 'Заявок', v: num(leads), w: 100 },
+        { t: 'Продаж', v: num(st.sales), w: Math.max(4, nz.cr) },
       ];
       el('calcFlow').innerHTML = rows.map((r) => `<div class="calc__bar">
         <span class="calc__bt">${r.t}</span>
@@ -78,26 +85,31 @@
         <b>${r.v}</b></div>`).join('');
 
       el('calcKpis').innerHTML = [
-        ['Заявка', rub(cpl)], ['Продажа', rub(cps)],
-        ['Выручка', rub(revenue)], ['На рубль рекламы', (romi >= 0 ? '+' : '−') + Math.abs(romi).toFixed(0) + '%'],
-      ].map(([t, v], i) => `<div class="calc__kpi${i === 3 ? (profit >= 0 ? ' is-ok' : ' is-bad') : ''}"><b>${v}</b><span>${t}</span></div>`).join('');
+        ['Заявок в месяц', num(leads)],
+        ['Цена продажи', rub(cps)],
+        ['Выручка', rub(revenue)],
+        ['Доля рекламы', share.toFixed(1) + '%'],
+      ].map(([t, v], i) => `<div class="calc__kpi${i === 3 ? (share <= 25 ? ' is-ok' : ' is-bad') : ''}"><b>${v}</b><span>${t}</span></div>`).join('');
 
-      el('calcVerdict').innerHTML = revenue <= 0
-        ? 'Подвигайте ползунки — посчитаем.'
-        : profit >= 0
-          ? `Реклама забирает <b>${(st.budget / revenue * 100).toFixed(1)}%</b> выручки. Поднимите «из кликов в заявки» на один пункт — и посмотрите, насколько вырастет итог. Обычно это дешевле, чем докладывать бюджет: тем и занимается сайт и скорость ответа.`
-          : `При этих числах канал не окупается. Это не приговор рекламе: чаще мешает что-то одно — дорогой клик, слабая посадочная или медленный отдел продаж. Подвигайте конверсии и увидите, какой рычаг сильнее.`;
+      el('calcVerdict').innerHTML = share <= 25
+        ? `Реклама заберёт <b>${share.toFixed(1)}%</b> выручки — для этой ниши нормально. Начинать имеет смысл с каналов:
+           <b>${esc(nz.ch)}</b>. Плюс наша работа — от 35 000 ₽ в месяц за канал.`
+        : `При таком чеке реклама съедает <b>${share.toFixed(1)}%</b> выручки — многовато. Обычно лечится одним из трёх:
+           поднять чек, добавить допродажи или сократить потери между заявкой и сделкой. На разборе смотрим, что доступнее именно вам.`;
     }
 
-    for (const f of F) {
-      const inp = el('cf_' + f.k);
+    const bindRange = (id, key, out, fmt) => {
+      const inp = el(id);
       const sync = () => {
-        inp.style.setProperty('--p', ((st[f.k] - f.min) / (f.max - f.min) * 100).toFixed(1) + '%');
-        el('cv_' + f.k).textContent = show(f);
+        inp.style.setProperty('--p', ((st[key] - inp.min) / (inp.max - inp.min) * 100).toFixed(1) + '%');
+        el(out).textContent = fmt(st[key]);
       };
-      inp.addEventListener('input', (e) => { st[f.k] = Number(e.target.value); sync(); draw(); });
+      inp.addEventListener('input', (e) => { st[key] = Number(e.target.value); sync(); draw(); });
       sync();
-    }
+    };
+    el('cfNiche').addEventListener('change', (e) => { st.i = Number(e.target.value); draw(); });
+    bindRange('cfCheck', 'check', 'cvCheck', rub);
+    bindRange('cfSales', 'sales', 'cvSales', (v) => num(v) + ' шт');
     draw();
   }());
 

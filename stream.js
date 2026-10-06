@@ -18,25 +18,29 @@
   const COLORS = [[138, 127, 224], [124, 110, 214], [173, 164, 240]];
 
   /**
-   * Мягкая «пушинка»: круг с размытым краем, нарисованный один раз в
-   * маленький холст. Дальше его просто копируем — три тысячи градиентов
-   * в кадре не потянет ни один браузер, а один скопировать дёшево.
+   * Бусина: плотный шарик с бликом и тенью — края чёткие, но форма объёмная.
+   * Рисуем один раз крупно и дальше уменьшаем: так получается аккуратное
+   * сглаживание без размытого ореола.
    */
-  function fluff(rgb) {
-    const S = 48;
+  function bead(rgb) {
+    const S = 72; const r = S / 2 - 3;
     const c = document.createElement('canvas');
     c.width = S; c.height = S;
     const g = c.getContext('2d');
-    const grad = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
-    grad.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.95)`);
-    grad.addColorStop(0.35, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.55)`);
-    grad.addColorStop(0.72, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.14)`);
-    grad.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
-    g.fillStyle = grad;
-    g.fillRect(0, 0, S, S);
+    const body = g.createRadialGradient(S * 0.38, S * 0.34, r * 0.1, S / 2, S / 2, r);
+    body.addColorStop(0, `rgb(${Math.min(255, rgb[0] + 70)},${Math.min(255, rgb[1] + 70)},${Math.min(255, rgb[2] + 50)})`);
+    body.addColorStop(0.55, `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`);
+    body.addColorStop(1, `rgb(${Math.round(rgb[0] * 0.55)},${Math.round(rgb[1] * 0.52)},${Math.round(rgb[2] * 0.72)})`);
+    g.fillStyle = body;
+    g.beginPath(); g.arc(S / 2, S / 2, r, 0, 6.3); g.fill();
+    const spot = g.createRadialGradient(S * 0.36, S * 0.3, 0, S * 0.36, S * 0.3, r * 0.52);
+    spot.addColorStop(0, 'rgba(255,255,255,0.75)');
+    spot.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = spot;
+    g.beginPath(); g.arc(S * 0.36, S * 0.3, r * 0.52, 0, 6.3); g.fill();
     return c;
   }
-  const SPRITES = COLORS.map(fluff);
+  const SPRITES = COLORS.map(bead);
   const HOLD = 2100;        // сколько держим слово
   const MORPH = 1500;       // сколько перетекаем
   const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -107,9 +111,9 @@
         x: w / 2 + (Math.random() - 0.5) * w,
         y: h / 2 + (Math.random() - 0.5) * h,
         fx: 0, fy: 0, tx: 0, ty: 0,
-        fa: 0, ta: 1, a: 1, br: 0.5,
+        fa: 0, ta: 1, a: 1,
         sw: (Math.random() - 0.5) * 0.9,          // завихрение по дороге
-        s: (Math.random() < 0.18 ? 13 : 9) + Math.random() * 3,
+        s: (Math.random() < 0.18 ? 11 : 8) + Math.random() * 2,
         ph: Math.random() * 6.28,                 // фаза дыхания — вместо дрожи
         sp: 0.5 + Math.random() * 0.7,
         g: i % SPRITES.length,
@@ -140,7 +144,7 @@
       ctx.clearRect(0, 0, w, h);
       for (const p of pts) {
         if (p.a <= 0.02) continue;
-        const s = p.s * (0.88 + p.br * 0.12);
+        const s = p.s;
         ctx.globalAlpha = Math.min(1, p.a);
         ctx.drawImage(SPRITES[p.g], p.x - s / 2, p.y - s / 2, s, s);
       }
@@ -164,11 +168,9 @@
         } else {
           // Плавное дыхание по своей фазе: никакого случайного дрожания,
           // иначе облако мерцает и выглядит как помехи.
-          const b = Math.sin(now / 1100 * p.sp + p.ph);
-          p.x += (p.tx + b * 1.1 - p.x) * 0.07;
-          p.y += (p.ty + Math.cos(now / 1300 * p.sp + p.ph) * 1.1 - p.y) * 0.07;
+          p.x += (p.tx + Math.sin(now / 2600 * p.sp + p.ph) * 0.5 - p.x) * 0.05;
+          p.y += (p.ty + Math.cos(now / 3000 * p.sp + p.ph) * 0.5 - p.y) * 0.05;
         }
-        p.br = (Math.sin(now / 900 * p.sp + p.ph) + 1) / 2;
         // Курсор расталкивает облако.
         const dx = p.x - pointer.x; const dy = p.y - pointer.y;
         const d2 = dx * dx + dy * dy;

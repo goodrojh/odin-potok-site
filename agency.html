@@ -34,8 +34,8 @@
   <div class="garland" aria-hidden="true">
    <div class="wrap garland__in">
     <svg class="garland__wire" viewBox="0 0 1200 300" preserveAspectRatio="none">
-      <path d="M-30 46 C 220 196, 430 196, 620 96 S 1000 10, 1230 104" />
-      <path d="M-30 150 C 180 292, 470 284, 690 186 S 1030 116, 1230 206" />
+      <path d="M-30 46 C 230 186, 470 186, 690 100 S 1030 20, 1230 112" />
+      <path d="M-30 136 C 210 258, 500 250, 740 170 S 1060 108, 1230 196" />
     </svg>
     <div class="garland__bulbs" id="garland"></div>
    </div>
@@ -66,60 +66,36 @@
     <div class="vs mt-xl">
       <div class="vs__col rise">
         <span class="vs__tag vs__tag--bad">Как обычно</span>
-        <svg class="vs__pic" viewBox="0 0 320 240" role="img" aria-label="Пять подрядчиков, пять отчётов, общего результата не видно">
-          <g class="vs__links">
-            <path d="M40 46 C 110 70, 150 120, 160 150" /><path d="M110 46 C 140 80, 150 120, 160 150" />
-            <path d="M180 46 C 170 80, 162 120, 160 150" /><path d="M250 46 C 210 80, 175 120, 160 150" />
-            <path d="M300 46 C 240 90, 180 120, 160 150" />
-          </g>
-          <g class="vs__node">
-            <rect x="12" y="24" width="56" height="26" rx="8" /><rect x="82" y="24" width="56" height="26" rx="8" />
-            <rect x="152" y="24" width="56" height="26" rx="8" /><rect x="222" y="24" width="56" height="26" rx="8" />
-            <rect x="272" y="68" width="40" height="26" rx="8" />
-          </g>
-          <g class="vs__lbl">
-            <text x="40" y="41">Директ</text><text x="110" y="41">Авито</text>
-            <text x="180" y="41">ВК</text><text x="250" y="41">TG</text><text x="292" y="85">CRM</text>
-          </g>
-          <circle class="vs__hub vs__hub--bad" cx="160" cy="170" r="30" />
-          <text class="vs__hubt" x="160" y="176">?</text>
-          <text class="vs__cap" x="160" y="226">Пять отчётов, общей картины нет</text>
-        </svg>
+        <div class="dg">
+          <div class="dg__row"><span class="dg__chip"><img src="assets/logos/yandex.png" alt="Директ" loading="lazy" /><i>Директ</i></span><span class="dg__chip"><img src="assets/logos/avito.png" alt="Авито" loading="lazy" /><i>Авито</i></span><span class="dg__chip"><img src="assets/logos/vk.png" alt="ВКонтакте" loading="lazy" /><i>ВКонтакте</i></span><span class="dg__chip"><img src="assets/logos/telegram.png" alt="Telegram" loading="lazy" /><i>Telegram</i></span><span class="dg__chip"><img src="assets/logos/2gis.png" alt="2ГИС" loading="lazy" /><i>2ГИС</i></span></div>
+          <div class="dg__lanes dg__lanes--split" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="dg__reports">
+            <span>отчёт</span><span>отчёт</span><span>отчёт</span><span>отчёт</span><span>отчёт</span>
+          </div>
+          <div class="dg__empty">Общая картина<b>?</b></div>
+        </div>
         <ul class="vs__list">
-          <li>Каждый считает свои заявки по-своему</li>
+          <li>У каждого свои заявки и своя метрика</li>
           <li>Каналы не видят друг друга и перебивают ставки</li>
-          <li>Падает выручка — виноватых нет</li>
+          <li>Падает выручка — причину не найти</li>
         </ul>
       </div>
 
       <div class="vs__col vs__col--good rise">
         <span class="vs__tag vs__tag--good">Как у нас</span>
-        <svg class="vs__pic" viewBox="0 0 320 240" role="img" aria-label="Каналы сходятся в одну воронку, из неё CRM и деньги">
-          <g class="vs__links vs__links--good">
-            <path d="M40 46 C 90 80, 140 110, 160 132" /><path d="M110 46 C 130 86, 150 112, 160 132" />
-            <path d="M180 46 C 174 86, 164 112, 160 132" /><path d="M250 46 C 210 86, 176 112, 160 132" />
-            <path d="M300 46 C 240 90, 180 112, 160 132" />
-            <path d="M160 160 L 160 196" />
-          </g>
-          <g class="vs__node vs__node--good">
-            <rect x="12" y="24" width="56" height="26" rx="8" /><rect x="82" y="24" width="56" height="26" rx="8" />
-            <rect x="152" y="24" width="56" height="26" rx="8" /><rect x="222" y="24" width="56" height="26" rx="8" />
-            <rect x="272" y="68" width="40" height="26" rx="8" />
-          </g>
-          <g class="vs__lbl">
-            <text x="40" y="41">Директ</text><text x="110" y="41">Авито</text>
-            <text x="180" y="41">ВК</text><text x="250" y="41">TG</text><text x="292" y="85">CRM</text>
-          </g>
-          <rect class="vs__hub vs__hub--good" x="118" y="134" width="84" height="28" rx="14" />
-          <text class="vs__hubt vs__hubt--sm" x="160" y="153">один поток</text>
-          <circle class="vs__coin" cx="160" cy="206" r="17" />
-          <text class="vs__hubt" x="160" y="213">₽</text>
-          <text class="vs__cap" x="160" y="236">Один отчёт и один ответственный</text>
-        </svg>
+        <div class="dg">
+          <div class="dg__row"><span class="dg__chip"><img src="assets/logos/yandex.png" alt="Директ" loading="lazy" /><i>Директ</i></span><span class="dg__chip"><img src="assets/logos/avito.png" alt="Авито" loading="lazy" /><i>Авито</i></span><span class="dg__chip"><img src="assets/logos/vk.png" alt="ВКонтакте" loading="lazy" /><i>ВКонтакте</i></span><span class="dg__chip"><img src="assets/logos/telegram.png" alt="Telegram" loading="lazy" /><i>Telegram</i></span><span class="dg__chip"><img src="assets/logos/2gis.png" alt="2ГИС" loading="lazy" /><i>2ГИС</i></span></div>
+          <div class="dg__funnel" aria-hidden="true"><span>один поток</span></div>
+          <div class="dg__out">
+            <span class="dg__card">один отчёт</span>
+            <span class="dg__arrow" aria-hidden="true"></span>
+            <span class="dg__card dg__card--money">выручка</span>
+          </div>
+        </div>
         <ul class="vs__list vs__list--good">
           <li>Один договор, один менеджер, один отчёт</li>
           <li>Бюджет перекидываем туда, где заявка дешевле</li>
-          <li>За общий результат отвечаем мы</li>
+          <li>За поток заявок и их цену отвечаем мы</li>
         </ul>
       </div>
     </div>
@@ -186,9 +162,9 @@
 <!-- КАЛЬКУЛЯТОР -->
 <section class="section" id="calc-sec">
   <div class="wrap">
-    <h2 class="rise">Посчитайте на своих числах</h2>
-    <p class="lead mt-s rise">Двигайте ползунки — всё пересчитывается на ходу. Это ваша арифметика, а не наше обещание:
-      ровно так же считаем и мы, когда решаем, стоит ли вообще запускать канал.</p>
+    <h2 class="rise">Сколько нужно бюджета под ваш план продаж</h2>
+    <p class="lead mt-s rise">Вы ставите нишу, чек и сколько продаж хотите. Цену заявки и доходимость до сделки
+      подставляем мы — это и есть то, за чем идут в агентство. Считается на ходу.</p>
     <div class="calc2 mt-l rise" id="calc"></div>
   </div>
 </section>
@@ -209,15 +185,16 @@
       </div>
       <a class="btn" href="#start">Обсудить пакет</a>
     </div>
-    <p class="form__note mt-m rise">Сайт в подарок при пакете от трёх каналов — собираем посадочную под ваш оффер и отдаём вам вместе с доступами.</p>
+    <p class="form__note mt-m rise">Сайт в подарок при работе от трёх месяцев — собираем посадочную под ваш оффер и отдаём вместе с доступами. Каналов при этом может быть и один.</p>
   </div>
 </section>
 
 <!-- СРАВНЕНИЕ -->
 <section class="section section--ink">
   <div class="wrap">
-    <h2 class="slogan rise">Успешный предприниматель<br />не настраивает рекламу сам<br /><span>и не держит пятерых подрядчиков</span></h2>
-    <p class="slogan__p rise">Он покупает результат целиком. Три способа получать заявки — и то, во что каждый обходится на самом деле.</p>
+    <h2 class="slogan rise">Успешный предприниматель не настраивает рекламу сам
+      и не держит пятерых подрядчиков — <span>он выбирает один поток</span></h2>
+    <p class="slogan__p rise">Три способа получать заявки и то, во что каждый обходится на самом деле.</p>
 
     <div class="cmp mt-xl rise">
       <div class="cmp__head">
@@ -230,8 +207,8 @@
         <span data-l="Самому">от 120 000 ₽ зарплата + налоги</span><span data-l="Подрядчики">от 150 000 ₽ по частям</span><span data-l="Один поток" class="cmp__best">от 35 000 ₽ за канал</span></div>
       <div class="cmp__row"><span class="cmp__k">Договоров и отчётов</span>
         <span data-l="Самому" class="cmp__no">1 человек на 7 каналов</span><span data-l="Подрядчики" class="cmp__no">5 договоров, 5 отчётов</span><span data-l="Один поток" class="cmp__best">1 договор, 1 отчёт</span></div>
-      <div class="cmp__row"><span class="cmp__k">Кто отвечает за выручку</span>
-        <span data-l="Самому" class="cmp__no">маркетолог в одиночку</span><span data-l="Подрядчики" class="cmp__no">никто</span><span data-l="Один поток" class="cmp__best">мы</span></div>
+      <div class="cmp__row"><span class="cmp__k">Кто отвечает за заявки и их цену</span>
+        <span data-l="Самому" class="cmp__no">маркетолог в одиночку</span><span data-l="Подрядчики" class="cmp__no">каждый за свой канал</span><span data-l="Один поток" class="cmp__best">мы, по всем каналам</span></div>
       <div class="cmp__row"><span class="cmp__k">Что будет, если уйдёт</span>
         <span data-l="Самому" class="cmp__no">унесёт доступы и знания</span><span data-l="Подрядчики" class="cmp__no">искать замену по одному</span><span data-l="Один поток" class="cmp__best">кабинеты и данные ваши</span></div>
       <div class="cmp__row"><span class="cmp__k">Срок до первых заявок</span>
@@ -239,7 +216,7 @@
       <div class="cmp__row"><span class="cmp__k">Учёт партнёров и рекомендаций</span>
         <span data-l="Самому" class="cmp__no">в таблице</span><span data-l="Подрядчики" class="cmp__no">нигде</span><span data-l="Один поток" class="cmp__best">в той же системе</span></div>
     </div>
-    <div class="slogan__cta rise"><a class="btn" data-plush href="#start"><span>Выбрать один поток</span></a></div>
+    <div class="slogan__cta rise"><a class="btn" href="#start">Выбрать один поток</a></div>
   </div>
 </section>
 
@@ -254,7 +231,7 @@
       <details data-pill="всё оформлено на вашу компанию"><summary>Чьи кабинеты и данные?</summary><p>Ваши. Рекламные кабинеты, CRM, домены и аналитика оформлены на вашу компанию. Если мы расстанемся, всё остаётся у вас вместе с историей и статистикой.</p></details>
       <details data-pill="гарантируем прозрачность, а не количество сделок"><summary>Есть гарантии по продажам?</summary><p>Гарантий по количеству сделок не даём: продажи зависят и от вашего отдела продаж. Гарантируем прозрачность — еженедельный отчёт по каналам, стоимость заявки и записи разговоров.</p></details>
       <details data-pill="можно, но советуем минимум три"><summary>Можно начать с одного канала?</summary><p>Да. Но честно предупреждаем: один канал редко даёт устойчивый поток. Мы рекомендуем минимум три — так видно, где заявка дешевле, и нет зависимости от одной площадки.</p></details>
-      <details data-pill="посадочная бесплатно от трёх каналов"><summary>Что с сайтом в подарок?</summary><p>При пакете от трёх каналов собираем посадочную страницу под ваш оффер, подключаем аналитику и формы, отдаём с доступами. Отдельно такая работа стоила бы как месяц ведения.</p></details>
+      <details data-pill="посадочная бесплатно при работе от трёх месяцев"><summary>Что с сайтом в подарок?</summary><p>Если работаем вместе от трёх месяцев, собираем посадочную страницу под ваш оффер, подключаем аналитику и формы и отдаём с доступами. Число каналов роли не играет — можно вести и один. Отдельно такая работа стоила бы как месяц ведения.</p></details>
       <details data-pill="в течение 30 минут в рабочее время"><summary>Как быстро отвечаете?</summary><p>В рабочее время — в течение 30 минут. Дальше держим связь в удобном вам мессенджере, без «личного кабинета подрядчика».</p></details>
       <details data-pill="от 100 000 ₽ в месяц на рекламу"><summary>Сколько нужно бюджета на старте?</summary><p>От 100 000 ₽ в месяц на рекламу: меньшая сумма размазывается по каналам и не даёт статистики для выводов. Точную цифру считаем на разборе под вашу нишу и средний чек.</p></details>
     </div>
@@ -287,7 +264,7 @@
           <div class="f"><label for="n">Как к вам обращаться</label><input id="n" name="name" placeholder="Имя" autocomplete="name" required /></div>
           <div class="f"><label for="c">Телефон или мессенджер</label><input id="c" name="contact" placeholder="+7 900 000-00-00 или @telegram" required /></div>
           <div class="f"><label for="b">Чем занимаетесь</label><input id="b" name="biz" placeholder="Ниша и город" /></div>
-          <button class="btn btn--wide" data-plush type="submit"><span>Записаться на разбор</span></button>
+          <button class="btn btn--wide" type="submit">Записаться на разбор</button>
           <div class="form__ok">Готово — открылся мессенджер с вашей заявкой. Если он не открылся, напишите нам напрямую: контакты в подвале.</div>
           <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку контактных данных для ответа на заявку.</p>
         </div>
@@ -301,6 +278,5 @@
 <script src="app.js"></script>
 <script src="stream.js"></script>
 <script src="widgets.js"></script>
-<script src="plush.js"></script>
 </body>
 </html>
