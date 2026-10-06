@@ -69,6 +69,60 @@ const PRM_PLANS = [
 const PRM_SETUP = 10000;      // подключение, разово
 const PRM_YEAR_OFF = 20;      // скидка за год, %
 
+/** Что делаем в сайтах — страница «Создание сайтов». */
+const WEB_WORKS = [
+  { n: 'Посадочная под рекламу', d: 'Одна страница под один канал и одно предложение. Пишется под те запросы, по которым вы покупаете клики, — иначе реклама греет чужую воронку.' },
+  { n: 'Лендинг', d: 'Полноценная продающая страница: оффер, доказательства, расчёт, формы. Для услуг с длинным решением — с калькулятором и подбором.' },
+  { n: 'Многостраничный сайт', d: 'Услуги, кейсы, цены, о компании, блог. Структура собирается под поисковые запросы, чтобы страницы работали и без рекламы.' },
+  { n: 'Интернет-магазин', d: 'Каталог, фильтры, корзина, оплата и доставка. Выгрузка товаров из 1С или таблицы, заказы падают в CRM.' },
+  { n: 'Переделка сайта', d: 'Сайт есть, но заявок нет. Разбираем по аналитике, где теряются люди, и переделываем то, что мешает, — без переписывания всего.' },
+  { n: 'Поддержка', d: 'Правки, новые страницы, обновления, мониторинг скорости и доступности. Чтобы сайт не умирал через полгода после сдачи.' },
+];
+
+/** Цены на сайты. Правятся здесь. */
+const WEB_PRICES = [
+  { n: 'Посадочная под рекламный канал', d: 'одна страница, запуск за 7–10 дней', p: 'от 60 000 ₽' },
+  { n: 'Лендинг', d: 'прототип, дизайн, вёрстка, подключение к CRM', p: 'от 90 000 ₽' },
+  { n: 'Многостраничный сайт', d: 'до 10 страниц, структура под поиск', p: 'от 180 000 ₽' },
+  { n: 'Интернет-магазин', d: 'каталог, оплата, доставка, выгрузка товаров', p: 'от 320 000 ₽' },
+  { n: 'Переделка существующего сайта', d: 'по данным аналитики, без полного переписывания', p: 'от 70 000 ₽' },
+  { n: 'Поддержка и правки', d: 'часы на правки, мониторинг, обновления', p: 'от 20 000 ₽/мес' },
+];
+
+/** Этапы работы над сайтом. */
+const WEB_STEPS = [
+  { t: 'Разбираемся', d: 'Кто покупает, за что платит, что спрашивает перед покупкой. Смотрим конкурентов и то, что уже есть у вас в аналитике.' },
+  { t: 'Прототип', d: 'Схема страниц без картинок: что за чем идёт и почему. Согласуем смысл до того, как рисовать, — так правки дешевле.' },
+  { t: 'Дизайн', d: 'Макеты для компьютера и телефона. Не «красиво вообще», а под ваш продукт и вашу цену.' },
+  { t: 'Сборка', d: 'Вёрстка, скорость, формы в CRM, аналитика и цели. Проверяем на реальных телефонах, а не только в браузере.' },
+  { t: 'Запуск', d: 'Домен, хостинг, сертификат, поисковые системы. Передаём доступы — всё оформлено на вас.' },
+  { t: 'После запуска', d: 'Смотрим, как ведут себя люди, и правим то, что мешает. Сайт — не памятник, а инструмент.' },
+];
+
+/** Что делаем в дизайне — страница «Дизайн». */
+const DESIGN_WORKS = [
+  { n: 'Логотип и знак', d: 'Несколько направлений на выбор, отрисовка в вектор, версии для вывески, сайта и аватарки. Передаём исходники.' },
+  { n: 'Фирменный стиль', d: 'Цвета, шрифты, графика, правила применения. Чтобы реклама, сайт и документы выглядели как одна компания.' },
+  { n: 'Брендбук', d: 'Документ, по которому любой подрядчик соберёт макет в вашем стиле и не придёт за согласованием каждой мелочи.' },
+  { n: 'Дизайн сайта', d: 'Макеты страниц под ваш продукт: компьютер и телефон, все состояния форм и кнопок. Можно отдать своим разработчикам.' },
+  { n: 'Креативы для рекламы', d: 'Баннеры и видеообложки под Яндекс, ВКонтакте, Telegram и Авито. Пакетами, чтобы было что тестировать.' },
+  { n: 'Презентации и КП', d: 'Коммерческое предложение, которое не стыдно отправить. Структура, цифры, верстка — читается за пять минут.' },
+  { n: 'Упаковка соцсетей', d: 'Обложки, аватарки, шаблоны постов и историй. Чтобы вести самим и не рассыпаться.' },
+  { n: 'Полиграфия и вывески', d: 'Визитки, буклеты, ценники, наружная реклама. Готовим в печать с нужными вылетами и цветами.' },
+];
+
+/** Цены на дизайн. Правятся здесь. */
+const DESIGN_PRICES = [
+  { n: 'Логотип', d: '3 направления, вектор, все версии, исходники', p: 'от 45 000 ₽' },
+  { n: 'Фирменный стиль', d: 'логотип, цвета, шрифты, носители', p: 'от 120 000 ₽' },
+  { n: 'Брендбук', d: 'правила применения и шаблоны', p: 'от 180 000 ₽' },
+  { n: 'Дизайн сайта', d: 'макеты страниц: компьютер и телефон', p: 'от 90 000 ₽' },
+  { n: 'Пакет рекламных креативов', d: '20 макетов под каналы, с адаптациями', p: 'от 35 000 ₽' },
+  { n: 'Презентация или КП', d: 'структура, текст, вёрстка, до 15 полос', p: 'от 50 000 ₽' },
+  { n: 'Упаковка соцсетей', d: 'обложки, аватарки, шаблоны постов', p: 'от 40 000 ₽' },
+  { n: 'Полиграфия', d: 'визитки, буклеты, ценники — за макет', p: 'от 15 000 ₽' },
+];
+
 /** Цены по отделу продаж. */
 const SALES_PRICES = [
   { n: 'Мини-аудит отдела продаж', d: 'вводный разбор с рекомендациями и файлом-отчётом', p: 'бесплатно' },
@@ -94,12 +148,15 @@ function header() {
   const links = [
     { href: 'index.html', t: 'Главная', k: 'home' },
     { href: 'agency.html', t: 'Привлечение заявок', k: 'agency' },
+    { href: 'web.html', t: 'Создание сайтов', k: 'web' },
+    { href: 'design.html', t: 'Дизайн', k: 'design' },
     { href: 'sales.html', t: 'Отдел продаж', k: 'sales' },
     { href: 'platform.html', t: 'Учёт партнёрки', k: 'platform' },
   ];
+  // На внутренних страницах форма уже в первом экране — зовём к ней, а не на другую страницу.
   const cta = PAGE === 'platform' ? `<a class="btn btn--sm" href="#trial">Попробовать бесплатно</a>`
-    : PAGE === 'sales' ? `<a class="btn btn--sm" href="#audit">Бесплатный аудит</a>`
-    : `<a class="btn btn--sm" href="${PAGE === 'agency' ? '#start' : 'agency.html#start'}">Разбор за 30 минут</a>`;
+    : PAGE === 'home' ? `<a class="btn btn--sm" href="#start">Обсудить задачу</a>`
+    : `<a class="btn btn--sm" href="#start">Оставить заявку</a>`;
   return `<div class="wrap head__in">
     <a class="brand" href="index.html"><img src="assets/logo-mark.png" alt="" /> Один поток</a>
     <nav class="nav" id="nav">
@@ -121,20 +178,23 @@ function footer() {
         <p style="color:rgba(255,255,255,.65);font-size:15px;max-width:34ch">Привлекаем заявки и считаем партнёрскую сеть. Кабинеты, данные и клиенты — ваши.</p>
       </div>
       <div class="foot__col">
-        <b>Привлечение заявок</b>
-        <a href="agency.html">Что входит</a>
-        <a href="agency.html#how">Как работаем</a>
-        <a href="agency.html#prices">Цены</a>
+        <b>Услуги</b>
+        <a href="agency.html">Привлечение заявок</a>
+        <a href="web.html">Создание сайтов</a>
+        <a href="design.html">Дизайн</a>
+        <a href="sales.html">Отдел продаж</a>
       </div>
       <div class="foot__col">
-        <b>Отдел продаж</b>
-        <a href="sales.html#what">Что делаем</a>
-        <a href="sales.html#prices">Цены</a>
-        <a href="sales.html#audit">Бесплатный аудит</a>
+        <b>Цены</b>
+        <a href="agency.html#prices">Реклама</a>
+        <a href="web.html#prices">Сайты</a>
+        <a href="design.html#prices">Дизайн</a>
+        <a href="sales.html#prices">Отдел продаж</a>
       </div>
       <div class="foot__col">
         <b>Учёт партнёрки</b>
         <a href="platform.html">Возможности</a>
+        <a href="platform.html#prices">Тарифы</a>
         <a href="platform.html#trial">Пробный период</a>
         <a href="${CONTACTS.cabinet}" target="_blank" rel="noopener">Войти в кабинет</a>
       </div>
@@ -150,6 +210,38 @@ function footer() {
       <span>Продажи на вас, заявки на нас</span>
     </div>
   </div>`;
+}
+
+/**
+ * Форма прямо в первом экране — её не надо искать и никуда нажимать.
+ * Разметка одна на все страницы: в html стоит <div data-hero-form="тема">,
+ * а подписи задаются атрибутами, чтобы тексты правились рядом со страницей.
+ */
+function heroForm(box) {
+  const topic = box.dataset.heroForm || 'Заявка с сайта';
+  const title = box.dataset.title || 'Обсудим задачу?';
+  const sub = box.dataset.sub || 'Ответим в течение рабочего дня и скажем, с чего начинать.';
+  const pick = (box.dataset.pick || '').split('|').filter(Boolean);
+  const i = box.dataset.i || Math.random().toString(36).slice(2, 7);
+  return `<form class="hform rise" data-lead="${esc(topic)}" novalidate>
+    <h2 class="hform__t">${esc(title)}</h2>
+    <p class="hform__s">${esc(sub)}</p>
+    <div class="form mt-m">
+      <div class="f"><label for="hn${i}">Как к вам обращаться</label>
+        <input id="hn${i}" name="name" placeholder="Имя" autocomplete="name" required /></div>
+      <div class="f"><label for="hc${i}">Телефон или мессенджер</label>
+        <input id="hc${i}" name="contact" placeholder="+7 900 000-00-00 или @telegram" required /></div>
+      ${pick.length ? `<div class="f"><label for="ht${i}">Что нужно</label>
+        <select id="ht${i}" name="topic">${pick.map((o) => `<option>${esc(o)}</option>`).join('')}</select></div>` : ''}
+      <button class="btn btn--wide" type="submit">Оставить заявку</button>
+      <div class="form__ok">Готово — открылся мессенджер с вашей заявкой. Если он не открылся, напишите нам: контакты в подвале.</div>
+      <p class="form__note">Нажимая кнопку, вы соглашаетесь на обработку контактных данных для ответа на заявку.</p>
+    </div>
+  </form>`;
+}
+
+function buildHeroForms() {
+  document.querySelectorAll('[data-hero-form]').forEach((box) => { box.outerHTML = heroForm(box); });
 }
 
 function platformCard(p) {
@@ -251,12 +343,20 @@ function applyContacts() {
   document.querySelectorAll('[data-trial-days]').forEach((el) => { el.textContent = CONTACTS.trialDays; });
 }
 
+buildHeroForms();
 const hdr = $('#head'); if (hdr) hdr.innerHTML = header();
 const ftr = $('#foot'); if (ftr) ftr.innerHTML = footer();
 buildMarquee();
 buildList('#channels', CHANNELS, (c) => `<div class="card rise"><h3>${esc(c.n)}</h3><p class="mt-s">${esc(c.d)}</p></div>`);
 buildPlans();
-buildList('#sales-prices', SALES_PRICES, (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`);
+const priceRow = (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`;
+const workCard = (w) => `<div class="card rise"><h3>${esc(w.n)}</h3><p class="mt-s">${esc(w.d)}</p></div>`;
+buildList('#sales-prices', SALES_PRICES, priceRow);
+buildList('#web-works', WEB_WORKS, workCard);
+buildList('#web-prices', WEB_PRICES, priceRow);
+buildList('#web-steps', WEB_STEPS, (x) => `<div class="step rise"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`);
+buildList('#design-works', DESIGN_WORKS, workCard);
+buildList('#design-prices', DESIGN_PRICES, priceRow);
 buildList('#prices-list', PRICES, (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`);
 applyContacts();
 watchRise();

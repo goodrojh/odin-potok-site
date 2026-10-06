@@ -441,3 +441,61 @@ img { max-width: 100%; display: block; }
 .ticks li::before { content: '✓'; position: absolute; left: 0; top: -1px; color: var(--accent); font-weight: 700; }
 .ticks--no li::before { content: '—'; color: var(--line); }
 @media (max-width: 760px) { .when { grid-template-columns: 1fr; } }
+
+/* ---------- первый экран с формой ---------- */
+.hero__in--split {
+  display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(30px, 4vw, 60px);
+  align-items: center; text-align: left;
+}
+.hero__in--split .lead { margin: 20px 0 0; text-align: left; }
+.hero__in--split .hero__cta { justify-content: flex-start; margin-top: 28px; }
+.hero__in--split .hero__note { text-align: left; }
+.hform {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: clamp(22px, 2.4vw, 30px); box-shadow: var(--shadow);
+}
+.hform__t { font-size: clamp(21px, 1.9vw, 25px); }
+.hform__s { margin: 8px 0 0; font-size: 15px; color: var(--dim); line-height: 1.5; }
+.hform .form { gap: 12px; }
+@media (max-width: 960px) {
+  .hero__in--split { grid-template-columns: 1fr; gap: 34px; }
+  .hero__in--split .hero__cta { justify-content: center; }
+}
+
+/* Шесть шагов в три колонки — по четыре строки становятся слишком узкими. */
+.steps--3 { grid-template-columns: repeat(3, 1fr); row-gap: 38px; }
+@media (max-width: 900px) { .steps--3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .steps--3 { grid-template-columns: 1fr; } }
+
+/* Шапка: разделов стало шесть — меню прячем раньше, чем ломается строка. */
+@media (max-width: 1240px) {
+  .nav { gap: 18px; margin-left: 10px; }
+  .nav a { font-size: 15px; }
+}
+@media (max-width: 1140px) {
+  .nav { display: none; }
+  .burger { display: block; }
+  .nav.is-open {
+    display: grid; position: absolute; top: 74px; left: 0; right: 0; background: #fff;
+    padding: 18px 24px 24px; gap: 14px; border-bottom: 1px solid var(--line); box-shadow: var(--shadow);
+    margin-left: 0;
+  }
+  .nav.is-open a { font-size: 17px; color: var(--ink); }
+}
+
+/* Четыре услуги плиткой 2×2, продукт — широкой карточкой под ними. */
+.ways--2 { grid-template-columns: repeat(2, 1fr); }
+.way--wide { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(24px, 3vw, 48px); align-items: center; }
+.way--wide ul { margin-top: 0; }
+@media (max-width: 1100px) { .ways--2 { grid-template-columns: 1fr; } .way--wide { grid-template-columns: 1fr; } }
+
+/* Шапка с шестью разделами: ссылки не переносим, иначе строка ломается. */
+.brand { white-space: nowrap; }
+.head__in { gap: 18px; }
+.nav { gap: 16px; margin-left: 6px; }
+.nav a { white-space: nowrap; font-size: 15px; }
+@media (max-width: 1340px) { .head__cta .btn--ghost { display: none; } }
+@media (max-width: 1200px) {
+  .nav { display: none; }
+  .burger { display: block; }
+}
