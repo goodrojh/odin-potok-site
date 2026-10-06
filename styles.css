@@ -110,31 +110,30 @@ img { max-width: 100%; display: block; }
 .hero__note { margin-top: 16px; font-size: 14px; color: var(--dim); }
 
 /* бегущие карточки площадок */
-.marquee { position: relative; margin-top: clamp(40px, 5vw, 66px); padding-bottom: 24px; }
+.marquee { position: relative; margin-top: clamp(32px, 4vw, 52px); padding-bottom: 6px; }
 .marquee::before, .marquee::after {
-  content: ''; position: absolute; top: 0; bottom: 0; width: 140px; z-index: 3; pointer-events: none;
+  content: ''; position: absolute; top: 0; bottom: 0; width: 110px; z-index: 3; pointer-events: none;
 }
 .marquee::before { left: 0; background: linear-gradient(90deg, #fff, rgba(255,255,255,0)); }
 .marquee::after { right: 0; background: linear-gradient(270deg, #fff, rgba(255,255,255,0)); }
 .arc { position: absolute; top: -34px; left: -4%; width: 108%; height: 170px; z-index: 0; pointer-events: none; }
-.marquee__row { position: relative; z-index: 1; display: flex; gap: 18px; width: max-content; animation: slide 46s linear infinite; }
-.marquee__row + .marquee__row { margin-top: 18px; animation-duration: 58s; animation-direction: reverse; }
+.marquee__row { position: relative; z-index: 1; display: flex; gap: 10px; width: max-content; animation: slide 64s linear infinite; }
+.marquee__row:empty { display: none; }
 .marquee:hover .marquee__row { animation-play-state: paused; }
 @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 .plat {
-  width: 236px; flex: none; background: #fff; border: 1px solid var(--line); border-radius: 18px;
-  padding: 18px; box-shadow: var(--shadow-soft); transition: transform .25s ease, box-shadow .25s ease;
+  flex: none; display: flex; align-items: center; gap: 9px;
+  background: #fff; border: 1px solid var(--line); border-radius: 999px;
+  padding: 7px 16px 7px 8px; box-shadow: var(--shadow-soft);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
-.plat:nth-child(odd) { transform: rotate(-1.6deg); }
-.plat:nth-child(even) { transform: rotate(1.4deg); }
-.plat:hover { transform: rotate(0) translateY(-6px); box-shadow: var(--shadow); }
+.plat:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--accent); }
 .plat__ic {
-  width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center;
-  color: #fff; font-weight: 800; font-size: 19px; margin-bottom: 12px; letter-spacing: -.02em;
+  width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; flex: none;
+  color: #fff; font-weight: 800; font-size: 10.5px; letter-spacing: -.02em;
 }
-.plat__n { font-weight: 700; font-size: 16px; }
-.plat__t { font-size: 13.5px; color: var(--dim); margin-top: 2px; }
+.plat__n { font-weight: 600; font-size: 14.5px; white-space: nowrap; }
 
 /* ---------- две дороги ---------- */
 .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
@@ -306,8 +305,8 @@ img { max-width: 100%; display: block; }
 .hero__in .kicker { display: inline-flex; }
 
 /* логотип площадки вместо буквы */
-.plat__ic--img { background: #fff; border: 1px solid var(--line); }
-.plat__ic--img img { width: 30px; height: 30px; object-fit: contain; }
+.plat__ic--img { background: #fff; box-shadow: 0 0 0 1px var(--line); }
+.plat__ic--img img { width: 18px; height: 18px; object-fit: contain; }
 
 /* телефон в разделе кабинета партнёра */
 .phone { width: 290px; border: 9px solid var(--ink); border-radius: 34px; overflow: hidden; box-shadow: var(--shadow); }

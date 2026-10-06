@@ -135,6 +135,18 @@ const DESIGN_PRICES = [
   { n: 'Полиграфия', d: 'визитки, буклеты, ценники — за макет', p: 'от 15 000 ₽' },
 ];
 
+/** Тарифы платформы: предел партнёров, цена в месяц, для кого. */
+const PRM_PLANS = [
+  { limit: 5,   price: 3900,  who: 'Первая партнёрская программа' },
+  { limit: 15,  price: 6900,  who: 'Рабочая программа и связка с CRM' },
+  { limit: 30,  price: 9900,  who: 'Свои условия по каждой услуге', hot: true },
+  { limit: 60,  price: 14900, who: 'Сеть приводит клиентов регулярно' },
+  { limit: 120, price: 21900, who: 'Крупная сеть и выгрузки' },
+  { limit: 300, price: 34900, who: 'Дилерская или агентская сеть' },
+];
+const PRM_SETUP = 10000;      // подключение, разово
+const PRM_YEAR_OFF = 20;      // скидка за год, %
+
 /** Цены по отделу продаж. */
 const SALES_PRICES = [
   { n: 'Мини-аудит отдела продаж', d: 'вводный разбор с рекомендациями и файлом-отчётом', p: 'бесплатно' },
@@ -256,21 +268,45 @@ function buildHeroForms() {
   document.querySelectorAll('[data-hero-form]').forEach((box) => { box.outerHTML = heroForm(box); });
 }
 
+/** Витрина сделанных сайтов. Пусто — честно говорим об этом, а не прячем раздел. */
+function buildWorks() {
+  const box = document.getElementById('works-grid');
+  if (!box) return;
+  if (!WORKS.length) {
+    box.innerHTML = `<div class="works__soon">
+      <b>Витрину собираем</b>
+      <p>Работы есть, но показывать их россыпью ссылок неправильно — готовим нормальные карточки.
+        Напишите, и пришлём примеры по вашей нише прямо сейчас.</p>
+      <a class="btn" href="#start">Попросить примеры</a>
+    </div>`;
+    return;
+  }
+  box.innerHTML = WORKS.map((w) => {
+    const pic = w.img
+      ? `<img src="assets/${w.img}" alt="${esc(w.n)}" loading="lazy" />`
+      : `<span class="work__noimg">${esc(w.n.slice(0, 1))}</span>`;
+    const inner = `<span class="work__pic">${pic}</span>
+      <b class="work__n">${esc(w.n)}</b>
+      <span class="work__d">${esc(w.d || '')}</span>`;
+    return w.url
+      ? `<a class="work rise" href="${esc(w.url)}" target="_blank" rel="noopener">${inner}<span class="work__go">Открыть сайт</span></a>`
+      : `<div class="work rise">${inner}</div>`;
+  }).join('');
+}
+
 function platformCard(p) {
   const ic = p.logo
-    ? `<div class="plat__ic plat__ic--img"><img src="assets/logos/${p.logo}" alt="${esc(p.n)}" loading="lazy" /></div>`
-    : `<div class="plat__ic" style="background:${p.c}">${esc(p.s)}</div>`;
-  return `<div class="plat">${ic}<div class="plat__n">${esc(p.n)}</div><div class="plat__t">${esc(p.t)}</div></div>`;
+    ? `<span class="plat__ic plat__ic--img"><img src="assets/logos/${p.logo}" alt="" loading="lazy" /></span>`
+    : `<span class="plat__ic" style="background:${p.c}">${esc(p.s)}</span>`;
+  return `<div class="plat" title="${esc(p.t)}">${ic}<span class="plat__n">${esc(p.n)}</span></div>`;
 }
 
 function buildMarquee() {
   const rows = document.querySelectorAll('.marquee__row');
   if (!rows.length) return;
-  const half = Math.ceil(PLATFORMS.length / 2);
-  const parts = [PLATFORMS.slice(0, half), PLATFORMS.slice(half)];
   rows.forEach((el, i) => {
-    const list = parts[i] ?? parts[0];
-    el.innerHTML = [...list, ...list, ...list].map(platformCard).join('');
+    // Второй ряд оставляем пустым: одна аккуратная строка читается лучше двух.
+    el.innerHTML = i ? '' : [...PLATFORMS, ...PLATFORMS, ...PLATFORMS].map(platformCard).join('');
   });
 }
 

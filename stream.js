@@ -61,8 +61,7 @@
     let pts = [];             // точки самого слова
     let area = { y: 0, h: 0 };// куда ставим слово
     let step = 0; let t0 = 0; let phase = 'hold';
-    let raf = 0; let running = false; let visible = true;
-    let pointer = { x: -999, y: -999 };
+    let raf = 0; let timer = 0; let running = false; let visible = true;
 
     /** Координаты закрашенных пикселей слова — цели для точек. */
     function sample(text, scale, gap, base) {
@@ -164,37 +163,44 @@
       ctx.globalAlpha = 1;
     }
 
+    /**
+     * Во время покоя не считаем и не перерисовываем вообще ничего: холст
+     * стоит кадр в кадр, поэтому мерцать физически нечему. Движение есть
+     * только на перетекании, дальше точки встают ровно по пикселям.
+     */
+    function snap() {
+      const q = 1 / dpr;                       // прижимаем к пикселям устройства
+      for (const p of pts) {
+        p.x = Math.round(p.tx / q) * q;
+        p.y = Math.round(p.ty / q) * q;
+        p.a = p.ta;
+      }
+    }
+
     function frame(now) {
       if (!t0) t0 = now;
-      const dt = now - t0;
-
-      if (phase === 'hold' && dt > HOLD) { phase = 'morph'; t0 = now; aim((step + 1) % words.length); setCaption((step + 1) % words.length); }
-      else if (phase === 'morph' && dt > MORPH) { phase = 'hold'; t0 = now; step = (step + 1) % words.length; }
-
-      const k = phase === 'morph' ? ease(Math.min(1, dt / MORPH)) : 1;
+      const k = ease(Math.min(1, (now - t0) / MORPH));
       for (const p of pts) {
-        if (phase === 'morph') {
-          const arc = Math.sin(k * Math.PI) * p.sw * 60;
-          p.x = p.fx + (p.tx - p.fx) * k + arc;
-          p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4;
-          p.a = p.fa + (p.ta - p.fa) * k;
-        } else {
-          // Плавное дыхание по своей фазе: никакого случайного дрожания,
-          // иначе облако мерцает и выглядит как помехи.
-          p.x += (p.tx + Math.sin(now / 2600 * p.sp + p.ph) * 0.5 - p.x) * 0.05;
-          p.y += (p.ty + Math.cos(now / 3000 * p.sp + p.ph) * 0.5 - p.y) * 0.05;
-        }
-        // Курсор расталкивает облако.
-        const dx = p.x - pointer.x; const dy = p.y - pointer.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < 9000 && d2 > 0.01) {
-          const f = (9000 - d2) / 9000;
-          p.x += dx * f * 0.09;
-          p.y += dy * f * 0.09;
-        }
+        const arc = Math.sin(k * Math.PI) * p.sw * 60;
+        p.x = p.fx + (p.tx - p.fx) * k + arc;
+        p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4;
+        p.a = p.fa + (p.ta - p.fa) * k;
       }
       draw();
+      if (k >= 1) { phase = 'hold'; snap(); draw(); hold(); return; }
       if (running) raf = requestAnimationFrame(frame);
+    }
+
+    /** Ждём и запускаем следующее слово. */
+    function hold() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        step = (step + 1) % words.length;
+        aim(step);
+        setCaption(step);
+        phase = 'morph'; t0 = 0;
+        raf = requestAnimationFrame(frame);
+      }, HOLD);
     }
 
     function setCaption(i) {
@@ -208,8 +214,8 @@
       const next = on && !reduced && !document.hidden;
       if (next === running) return;
       running = next;
-      if (running) { t0 = 0; raf = requestAnimationFrame(frame); }
-      else cancelAnimationFrame(raf);
+      if (running) { if (phase === 'morph') { t0 = 0; raf = requestAnimationFrame(frame); } else hold(); }
+      else { cancelAnimationFrame(raf); clearTimeout(timer); }
     }
 
     build();
@@ -220,14 +226,9 @@
     let resizeTimer = 0;
     addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; t0 = 0; setCaption(0); draw(); }, 200);
+      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; aim(0, true); setCaption(0); draw(); if (running) hold(); }, 200);
     }, { passive: true });
     document.addEventListener('visibilitychange', () => play(visible));
-    host.parentElement.addEventListener('pointermove', (e) => {
-      const box = host.getBoundingClientRect();
-      pointer = { x: e.clientX - box.left, y: e.clientY - box.top };
-    }, { passive: true });
-    host.parentElement.addEventListener('pointerleave', () => { pointer = { x: -999, y: -999 }; });
     new IntersectionObserver((rows) => { visible = rows[0].isIntersecting; play(visible); }, { threshold: 0 }).observe(host);
     play(true);
   }
