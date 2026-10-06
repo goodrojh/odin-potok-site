@@ -15,7 +15,6 @@
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
 <section class="hero hero--page" id="start">
-  <canvas class="stream stream--soft" data-stream="web" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Сайт, который приносит заявки,<br /><span>а не лежит в портфолио</span></h1>
@@ -32,10 +31,12 @@
 
 <!-- ПОЛОСА «ПОТОК» -->
 <section class="flowband">
-  <canvas class="stream stream--band" data-stream="web" aria-hidden="true"></canvas>
-  <div class="wrap flowband__in">
-    <h2 class="flowband__h">Сотни визитов —<br /><span>одно действие</span></h2>
-    <p class="flowband__p">Задача сайта не «понравиться», а довести человека до одного понятного шага. Остальное — украшения.</p>
+  <div class="wrap">
+    <h2 class="flowband__h rise">Сайт решает, сколько останется после первого экрана</h2>
+    <div class="flowband__stage">
+      <canvas class="stream stream--band" data-flow="ЗАШЛИ|ПОНЯЛИ|ОСТАВИЛИ|₽" data-caps="Пришли с рекламы или из поиска|Разобрались, что вы продаёте|Дошли до формы и написали|Дошли до денег" aria-hidden="true"></canvas>
+    </div>
+    <p class="flowband__cap" data-flow-cap>&nbsp;</p>
   </div>
 </section>
 

@@ -1,138 +1,199 @@
 /*
- * «Поток» — фирменный приём сайта.
+ * «Поток» — облако точек, которое перетекает из слова в слово.
  *
- * Название компании и есть идея картинки: разрозненные источники сходятся
- * в один поток и доходят до результата. Поэтому фон не изображение, а
- * рисунок, который считается в браузере: точки летят слева, сжимаются в
- * узкое горло и расходятся веером справа.
+ * Это не украшение: на каждом шаге часть точек отваливается и гаснет,
+ * поэтому воронку видно глазами. Было «КЛИКИ» — осталась половина, стало
+ * «ЗАЯВКИ»; ещё четверть — «ПРОДАЖИ»; горстка — «₽». Слова у каждой
+ * страницы свои, смысл один: из чего во что перетекает ваш поток.
  *
- * Два применения:
- *   .stream  в первом экране — еле заметная фактура под содержимым;
- *   .stream  в полосе под ним — тот же поток в полную силу, с подписью.
+ * Как устроено: слово рисуется в невидимый холст, из него вынимаются
+ * координаты закрашенных пикселей — это и есть цели для точек. Дальше
+ * обычная интерполяция с лёгким завихрением по дороге.
  *
- * Бережём батарею и глаза: при prefers-reduced-motion рисуем один кадр и
- * останавливаемся, вне экрана и в фоновой вкладке — не считаем ничего.
+ * Разметка: <canvas class="stream" data-flow="КЛИКИ|ЗАЯВКИ|₽"
+ *                   data-caps="подпись|подпись|подпись"></canvas>
  */
 (() => {
-  const ACCENT = [99, 86, 200];
-  const ACCENT2 = [138, 127, 224];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // n — плотность, waist — ширина горла, speed — скорость, warm — доля светлых точек.
-  const MODES = {
-    home: { n: 1.00, waist: 0.030, speed: 1.00, warm: 0.55 },
-    agency: { n: 1.15, waist: 0.022, speed: 1.20, warm: 0.70 },
-    web: { n: 0.95, waist: 0.045, speed: 0.95, warm: 0.45 },
-    design: { n: 0.95, waist: 0.055, speed: 0.90, warm: 0.35 },
-    sales: { n: 1.05, waist: 0.026, speed: 1.10, warm: 0.60 },
-    platform: { n: 0.85, waist: 0.035, speed: 0.85, warm: 0.50 },
-  };
+  const COLORS = ['rgba(138,127,224,', 'rgba(124,110,214,', 'rgba(167,158,236,'];
+  const HOLD = 2100;        // сколько держим слово
+  const MORPH = 1500;       // сколько перетекаем
+  const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   function start(host) {
     const ctx = host.getContext && host.getContext('2d', { alpha: true });
     if (!ctx) return;
-    const mode = MODES[host.dataset.stream] ?? MODES.home;
-    const band = host.classList.contains('stream--band');
-    const rnd = (a, b) => a + Math.random() * (b - a);
+    const words = (host.dataset.flow || 'ПОТОК').split('|');
+    const caps = (host.dataset.caps || '').split('|');
+    const capBox = host.closest('.flowband')?.querySelector('[data-flow-cap]');
+    // Каждое следующее слово мельче предыдущего: точек на него нужно меньше,
+    // и воронка получается сама собой — не «часть исчезла», а «осталось меньше».
+    const SCALE = [1, 0.74, 0.55, 0.4, 0.32];
+    let keep = words.map(() => 1);
 
-    let w = 0; let h = 0; let parts = []; let raf = 0;
-    let running = false; let visible = true;
-    let mouse = { x: -999, y: -999 };
+    let w = 0; let h = 0; let dpr = 1;
+    let shapes = [];          // координаты точек для каждого слова
+    let pts = [];             // сами точки
+    let step = 0; let t0 = 0; let phase = 'hold';
+    let raf = 0; let running = false; let visible = true;
+    let pointer = { x: -999, y: -999 };
 
-    function spawn(anywhere) {
-      return {
-        x: anywhere ? rnd(0, w) : rnd(-90, -10),
-        lane: rnd(-1, 1),
-        y: 0, py: 0,
-        v: rnd(0.6, 1.7) * mode.speed,
-        r: rnd(0.8, band ? 2.8 : 2.2),
-        a: rnd(0.35, 1),
-        c: Math.random() < mode.warm ? ACCENT : ACCENT2,
-        bright: Math.random() < (band ? 0.14 : 0.08),
-      };
+    /** Координаты закрашенных пикселей слова — цели для точек. */
+    function sample(text, scale, gap, base) {
+      const off = document.createElement('canvas');
+      const ow = Math.round(w); const oh = Math.round(h);
+      off.width = ow; off.height = oh;
+      const c = off.getContext('2d');
+      const size = base * scale;
+      c.fillStyle = '#fff';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.font = `800 ${Math.round(size)}px -apple-system, "Segoe UI", Roboto, Arial, sans-serif`;
+      c.fillText(text, ow / 2, oh / 2);
+      const data = c.getImageData(0, 0, ow, oh).data;
+      const out = [];
+      for (let y = 0; y < oh; y += gap) {
+        for (let x = 0; x < ow; x += gap) {
+          if (data[(y * ow + x) * 4 + 3] > 128) out.push(x + (Math.random() - 0.5) * gap, y + (Math.random() - 0.5) * gap);
+        }
+      }
+      return out;
     }
 
-    /** Вертикаль точки: слева широко, в горле почти ноль, справа снова веером. */
-    function yAt(p, t) {
-      const waist = 0.63;
-      const d = Math.abs(t - waist);
-      const k = t < waist ? 1 : 0.72;                       // справа веер мягче
-      const spread = mode.waist + Math.pow(d / waist, 1.6) * 0.46 * k;
-      const wave = Math.sin(t * 5.4 + p.lane * 3.3) * 0.015;
-      return h * (0.5 + p.lane * spread + wave);
-    }
-
-    function resize() {
+    function build() {
       const box = host.getBoundingClientRect();
-      const dpr = Math.min(devicePixelRatio || 1, 2);
+      dpr = Math.min(devicePixelRatio || 1, 2);
       w = Math.max(320, box.width);
-      h = Math.max(120, box.height);
+      h = Math.max(160, box.height);
       host.width = Math.round(w * dpr);
       host.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const base = band ? w / 4.2 : w / 6;
-      parts = Array.from({ length: Math.round(Math.min(340, Math.max(70, base)) * mode.n) }, () => spawn(true));
-      for (const p of parts) { p.y = yAt(p, p.x / w); p.py = p.y; }
+
+      // Шаг выборки подбираем так, чтобы самое большое слово уложилось в бюджет точек.
+      // Кегль считаем по самому длинному слову, а дальше только уменьшаем:
+      // так видно, что поток физически усыхает, а не просто меняет надпись.
+      const longest = Math.max(...words.map((t) => t.length));
+      const base = Math.min(h * 0.66, (w * 0.9) / Math.max(3.2, longest * 0.58));
+      let gap = 3;
+      for (let i = 0; i < 4; i++) {
+        shapes = words.map((t, k) => sample(t, SCALE[k] ?? 0.3, gap, base));
+        if (Math.max(...shapes.map((sh) => sh.length / 2)) <= 3000) break;
+        gap += 1;
+      }
+      const n = Math.max(...shapes.map((sh) => Math.round(sh.length / 2)));
+      keep = shapes.map((sh) => (sh.length / 2) / n);
+      pts = Array.from({ length: n }, (_, i) => ({
+        x: w / 2 + (Math.random() - 0.5) * w,
+        y: h / 2 + (Math.random() - 0.5) * h,
+        fx: 0, fy: 0, tx: 0, ty: 0,
+        fa: 0, ta: 1, a: 1,
+        sw: (Math.random() - 0.5) * 0.9,          // завихрение по дороге
+        s: Math.random() < 0.14 ? 3.1 : 2.1,
+        c: COLORS[i % COLORS.length],
+      }));
+      aim(0, true);
     }
 
-    function step() {
-      ctx.clearRect(0, 0, w, h);
-      for (const p of parts) {
-        p.x += p.v;
-        if (p.x > w + 50) Object.assign(p, spawn(false));
-        const t = Math.max(0, Math.min(1, p.x / w));
-        p.py = p.y;
-        p.y = yAt(p, t);
-
-        if (band) {                                          // курсор расталкивает поток
-          const dx = p.x - mouse.x; const dy = p.y - mouse.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < 16000) {
-            const f = (16000 - d2) / 16000;
-            p.x += dx * f * 0.06;
-            p.y += dy * f * 0.18;
-          }
+    /** Раздаём точкам цели для шага i. Лишние уходят вниз и гаснут. */
+    function aim(i, instant) {
+      const shape = shapes[i];
+      const slots = shape.length / 2;
+      const alive = Math.max(1, Math.round(pts.length * keep[i]));
+      pts.forEach((p, k) => {
+        p.fx = p.x; p.fy = p.y; p.fa = p.a;
+        if (k < alive) {
+          const j = (k % slots) * 2;
+          p.tx = shape[j]; p.ty = shape[j + 1]; p.ta = 1;
+        } else {
+          p.tx = p.x + (Math.random() - 0.5) * 120;
+          p.ty = p.y + 90 + Math.random() * 160;
+          p.ta = 0;
         }
+        if (instant) { p.x = p.tx; p.y = p.ty; p.a = p.ta; }
+      });
+    }
 
-        const fade = t < 0.07 ? t / 0.07 : t > 0.92 ? (1 - t) / 0.08 : 1;
-        const al = p.a * fade * (p.bright ? 1 : 0.75);
-        ctx.strokeStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${al * 0.9})`;
-        ctx.lineWidth = p.r;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(p.x - p.v * (band ? 18 : 12), p.py);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-        if (p.bright) {
-          ctx.fillStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${al})`;
+    /* Два прохода: мягкое свечение и сама точка. Всё одной заливкой на цвет,
+       иначе три тысячи отдельных кругов съедают кадр. */
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (const pass of [{ grow: 3.2, al: '0.16)' }, { grow: 0, al: '0.95)' }]) {
+        for (let g = 0; g < COLORS.length; g++) {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r * 1.6, 0, 6.3);
-          ctx.fill();
+          let any = false;
+          for (const p of pts) {
+            if (p.c !== COLORS[g] || p.a <= 0.02) continue;
+            const s = p.s + pass.grow;
+            ctx.rect(p.x - s / 2, p.y - s / 2, s, s);
+            any = true;
+          }
+          if (any) { ctx.fillStyle = COLORS[g] + pass.al; ctx.fill(); }
         }
       }
-      if (running) raf = requestAnimationFrame(step);
+    }
+
+    function frame(now) {
+      if (!t0) t0 = now;
+      const dt = now - t0;
+
+      if (phase === 'hold' && dt > HOLD) { phase = 'morph'; t0 = now; aim((step + 1) % words.length); setCaption((step + 1) % words.length); }
+      else if (phase === 'morph' && dt > MORPH) { phase = 'hold'; t0 = now; step = (step + 1) % words.length; }
+
+      const k = phase === 'morph' ? ease(Math.min(1, dt / MORPH)) : 1;
+      for (const p of pts) {
+        if (phase === 'morph') {
+          const arc = Math.sin(k * Math.PI) * p.sw * 60;
+          p.x = p.fx + (p.tx - p.fx) * k + arc;
+          p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4;
+          p.a = p.fa + (p.ta - p.fa) * k;
+        } else {
+          p.x += (p.tx - p.x) * 0.08 + (Math.random() - 0.5) * 0.35;   // лёгкое дыхание
+          p.y += (p.ty - p.y) * 0.08 + (Math.random() - 0.5) * 0.35;
+        }
+        // Курсор расталкивает облако.
+        const dx = p.x - pointer.x; const dy = p.y - pointer.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 9000 && d2 > 0.01) {
+          const f = (9000 - d2) / 9000;
+          p.x += dx * f * 0.09;
+          p.y += dy * f * 0.09;
+        }
+      }
+      draw();
+      if (running) raf = requestAnimationFrame(frame);
+    }
+
+    function setCaption(i) {
+      if (capBox && caps[i]) {
+        capBox.style.opacity = '0';
+        setTimeout(() => { capBox.textContent = caps[i]; capBox.style.opacity = '1'; }, 220);
+      }
     }
 
     function play(on) {
       const next = on && !reduced && !document.hidden;
       if (next === running) return;
       running = next;
-      if (running) raf = requestAnimationFrame(step);
+      if (running) { t0 = 0; raf = requestAnimationFrame(frame); }
       else cancelAnimationFrame(raf);
     }
 
-    resize();
-    if (reduced) { step(); return; }
+    build();
+    setCaption(0);
+    draw();
+    if (reduced) return;
 
-    addEventListener('resize', () => { resize(); if (!running) step(); }, { passive: true });
+    let resizeTimer = 0;
+    addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; t0 = 0; setCaption(0); draw(); }, 200);
+    }, { passive: true });
     document.addEventListener('visibilitychange', () => play(visible));
-    if (band) {
-      host.parentElement.addEventListener('pointermove', (e) => {
-        const box = host.getBoundingClientRect();
-        mouse = { x: e.clientX - box.left, y: e.clientY - box.top };
-      }, { passive: true });
-      host.parentElement.addEventListener('pointerleave', () => { mouse = { x: -999, y: -999 }; });
-    }
+    host.parentElement.addEventListener('pointermove', (e) => {
+      const box = host.getBoundingClientRect();
+      pointer = { x: e.clientX - box.left, y: e.clientY - box.top };
+    }, { passive: true });
+    host.parentElement.addEventListener('pointerleave', () => { pointer = { x: -999, y: -999 }; });
     new IntersectionObserver((rows) => { visible = rows[0].isIntersecting; play(visible); }, { threshold: 0 }).observe(host);
     play(true);
   }

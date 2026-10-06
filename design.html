@@ -15,7 +15,6 @@
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
 <section class="hero hero--page" id="start">
-  <canvas class="stream stream--soft" data-stream="design" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Дизайн, который<br /><span>проверен рекламой</span></h1>
@@ -32,10 +31,12 @@
 
 <!-- ПОЛОСА «ПОТОК» -->
 <section class="flowband">
-  <canvas class="stream stream--band" data-stream="design" aria-hidden="true"></canvas>
-  <div class="wrap flowband__in">
-    <h2 class="flowband__h">Двадцать макетов —<br /><span>один победитель</span></h2>
-    <p class="flowband__p">Какой сработает — не угадывает никто. Поэтому мы отдаём пакетами, запускаем и оставляем тот, у которого заявка дешевле.</p>
+  <div class="wrap">
+    <h2 class="flowband__h rise">Между «увидели» и «нажали» стоит макет</h2>
+    <div class="flowband__stage">
+      <canvas class="stream stream--band" data-flow="УВИДЕЛИ|ЗАМЕТИЛИ|КЛИКНУЛИ|₽" data-caps="Баннер попал в ленту|Выделился среди остальных|Перешли на сайт|Дошли до покупки" aria-hidden="true"></canvas>
+    </div>
+    <p class="flowband__cap" data-flow-cap>&nbsp;</p>
   </div>
 </section>
 

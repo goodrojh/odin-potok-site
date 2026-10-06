@@ -15,7 +15,6 @@
 <main>
 <!-- ПЕРВЫЙ ЭКРАН -->
 <section class="hero hero--page" id="start">
-  <canvas class="stream stream--soft" data-stream="sales" aria-hidden="true"></canvas>
   <div class="wrap hero__in hero__in--split">
     <div>
       <h1 class="rise">Заявки есть,<br /><span>а продаж нет</span></h1>
@@ -42,10 +41,12 @@
 
 <!-- ПОЛОСА «ПОТОК» -->
 <section class="flowband">
-  <canvas class="stream stream--band" data-stream="sales" aria-hidden="true"></canvas>
-  <div class="wrap flowband__in">
-    <h2 class="flowband__h">Десять заявок —<br /><span>и сколько продаж</span></h2>
-    <p class="flowband__p">Между заявкой и деньгами стоит разговор. Его можно оставить на удачу, а можно поставить и проверять.</p>
+  <div class="wrap">
+    <h2 class="flowband__h rise">Заявка стоит денег. Разговор решает, окупится ли она</h2>
+    <div class="flowband__stage">
+      <canvas class="stream stream--band" data-flow="ЗВОНКИ|РАЗГОВОРЫ|СДЕЛКИ|₽" data-caps="Заявки, за которые вы уже заплатили|Из них дошли до разговора|Из них закрылись|Разница — это работа отдела продаж" aria-hidden="true"></canvas>
+    </div>
+    <p class="flowband__cap" data-flow-cap>&nbsp;</p>
   </div>
 </section>
 
