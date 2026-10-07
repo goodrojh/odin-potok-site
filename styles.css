@@ -890,3 +890,110 @@ a.work:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-co
 .works__soon p { margin: 10px auto 20px; font-size: 16px; color: var(--dim); line-height: 1.6; max-width: 56ch; }
 @media (max-width: 960px) { .works { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .works { grid-template-columns: 1fr; } }
+
+/* значок «сайт в подарок» на карточке канала */
+.gmark {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+  background: var(--ok-bg); color: var(--ok); border-radius: 999px;
+  padding: 5px 12px 5px 9px; font-size: 13px; font-weight: 600;
+}
+
+/* ---------- схема: каналы, узел, собственник ---------- */
+.vs__sub { margin: 10px 0 0; font-size: 15px; color: var(--dim); line-height: 1.5; }
+.dg { margin: 18px 0 0; }
+.dg__row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.dg__chip { display: grid; justify-items: center; gap: 6px; }
+.dg__chip img { width: 30px; height: 30px; object-fit: contain; padding: 6px; background: #fff; border-radius: 12px; box-shadow: 0 0 0 1px var(--line), 0 6px 14px rgba(21,18,42,.06); box-sizing: content-box; }
+.dg__chip b { width: 30px; height: 30px; padding: 6px; box-sizing: content-box; border-radius: 12px; background: var(--accent); color: #fff; font-size: 10.5px; display: grid; place-items: center; }
+.dg__chip i { font-style: normal; font-size: 11px; color: var(--dim); font-weight: 600; text-align: center; }
+.dg__web { height: 96px; }
+.dg__web--good { height: 60px; }
+.dg__web svg { width: 100%; height: 100%; display: block; }
+.dg__web path { fill: none; stroke: #e2dcf4; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.dg__web--good path { stroke: var(--accent-2); stroke-width: 2; }
+.dg__you { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.dg__ava { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+.dg__you--bad .dg__ava { background: #fdeaf0; color: #b3123c; }
+.dg__you--good .dg__ava { background: var(--ok-bg); color: var(--ok); }
+.dg__you b { font-size: 16.5px; }
+.dg__hub {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: linear-gradient(135deg, #2a2250, var(--accent)); color: #fff;
+  border-radius: 14px; padding: 12px 20px; box-shadow: 0 12px 28px rgba(99,86,200,.3);
+}
+.dg__hub img { width: 26px; height: 26px; object-fit: contain; }
+.dg__hub b { font-size: 16.5px; }
+.dg__arrow2 { width: 2px; height: 26px; margin: 0 auto; background: var(--accent-2); position: relative; }
+.dg__arrow2::after { content: ''; position: absolute; bottom: -1px; left: -5px; border: 6px solid transparent; border-top-color: var(--accent-2); }
+.dg__time { list-style: none; margin: 20px 0 0; padding: 18px 0 0; border-top: 1px solid var(--line); display: grid; gap: 11px; }
+.dg__time li { font-size: 15px; color: var(--dim); line-height: 1.45; }
+.dg__time b { color: #b3123c; font-size: 16.5px; margin-right: 4px; }
+.dg__time--good b { color: var(--ok); }
+@media (max-width: 420px) { .dg__chip i { font-size: 9.5px; } }
+
+/* ---------- блок разбора ---------- */
+.audit { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(28px, 4vw, 64px); align-items: start; }
+.audit__tag {
+  display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: .03em;
+  background: rgba(138, 127, 224, .2); color: var(--accent-2); border-radius: 999px; padding: 7px 14px;
+}
+.audit__h { margin-top: 16px; font-size: clamp(30px, 4vw, 52px); letter-spacing: -.03em; line-height: 1.08; }
+.audit__lead { margin: 16px 0 0; font-size: clamp(16px, 1.5vw, 18.5px); line-height: 1.6; color: rgba(255, 255, 255, .72); max-width: 52ch; }
+.audit__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: clamp(26px, 3vw, 40px); }
+.audit__i { position: relative; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .16); }
+.audit__n {
+  position: absolute; top: -15px; left: 0; width: 30px; height: 30px; border-radius: 10px;
+  background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 14px;
+}
+.audit__i b { display: block; margin: 14px 0 5px; font-size: 17px; }
+.audit__i span { font-size: 15px; color: rgba(255, 255, 255, .62); line-height: 1.5; }
+@media (max-width: 920px) { .audit { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .audit__grid { grid-template-columns: 1fr; } }
+
+/* ---------- карточка формы ---------- */
+.formcard {
+  background: #fff; border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 26px 60px rgba(14, 11, 30, .3); border: 1px solid var(--line);
+}
+.formcard--light { box-shadow: var(--shadow); }
+.formcard__top { background: linear-gradient(135deg, #241d44, var(--accent)); color: #fff; padding: 22px 26px; }
+.formcard__top b { display: block; font-size: 20px; letter-spacing: -.02em; }
+.formcard__top span { display: block; margin-top: 5px; font-size: 14.5px; color: rgba(255, 255, 255, .72); }
+.formcard__body { padding: 24px 26px 26px; display: grid; gap: 14px; }
+.formcard--light { padding: 0; }
+.formcard--light > h3 { padding: 24px 26px 0; }
+.formcard--light > .dim { padding: 0 26px; }
+.formcard--light > .form { padding: 18px 26px 26px; }
+
+/* ---------- поля ---------- */
+.f label { display: block; font-size: 13.5px; font-weight: 600; color: var(--dim); margin-bottom: 7px; }
+.f input, .f textarea, .f select {
+  width: 100%; font: inherit; font-size: 16px; color: var(--ink);
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 13px;
+  padding: 13px 15px; transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.f input::placeholder, .f textarea::placeholder { color: #a9a4c0; }
+.f input:hover, .f textarea:hover, .f select:hover { border-color: #cdc5e8; }
+.f input:focus, .f textarea:focus, .f select:focus {
+  outline: none; background: #fff; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(99, 86, 200, .14);
+}
+.f textarea { min-height: 96px; resize: vertical; }
+.form .btn--wide { margin-top: 4px; padding-top: 15px; padding-bottom: 15px; font-size: 16.5px; }
+.formcard__body .btn--wide { margin-top: 4px; padding-top: 15px; padding-bottom: 15px; font-size: 16.5px; }
+.form__note { font-size: 13px; color: var(--dim); line-height: 1.5; margin: 0; }
+.form__ok { display: none; background: var(--ok-bg); color: var(--ok); border-radius: 13px; padding: 14px 16px; font-size: 15px; line-height: 1.5; }
+
+/* Карточка формы всегда светлая — даже когда стоит на тёмной секции,
+   иначе поля наследуют белый текст и становятся невидимыми. */
+.section--ink .formcard .f label { color: var(--dim); }
+.section--ink .formcard .f input,
+.section--ink .formcard .f textarea,
+.section--ink .formcard .f select { background: var(--paper); border-color: var(--line); color: var(--ink); }
+.section--ink .formcard .f input:focus,
+.section--ink .formcard .f textarea:focus,
+.section--ink .formcard .f select:focus { background: #fff; border-color: var(--accent); }
+.section--ink .formcard .f input::placeholder,
+.section--ink .formcard .f textarea::placeholder { color: #a9a4c0; }
+.section--ink .formcard .form__note { color: var(--dim); }
+.section--ink .formcard h3 { color: var(--ink); }
+.section--ink .formcard .dim { color: var(--dim); }
