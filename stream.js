@@ -17,35 +17,9 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const COLORS = [[138, 127, 224], [124, 110, 214], [173, 164, 240]];
 
-  /**
-   * Вязаная петля: две дуги «галочкой», как стежок на спицах. Рисуем
-   * один раз крупно и дальше уменьшаем — край остаётся чётким, а форма
-   * объёмной. Несколько наклонов, чтобы полотно не выглядело штампованным.
-   */
-  function stitch(rgb, tilt) {
-    const S = 72;
-    const c = document.createElement('canvas');
-    c.width = S; c.height = S;
-    const g = c.getContext('2d');
-    g.translate(S / 2, S / 2); g.rotate(tilt); g.translate(-S / 2, -S / 2);
-    const dark = `rgb(${Math.round(rgb[0] * 0.62)},${Math.round(rgb[1] * 0.6)},${Math.round(rgb[2] * 0.78)})`;
-    const light = `rgb(${Math.min(255, rgb[0] + 58)},${Math.min(255, rgb[1] + 58)},${Math.min(255, rgb[2] + 40)})`;
-    const draw = (color, width, dy) => {
-      g.strokeStyle = color; g.lineWidth = width; g.lineCap = 'round'; g.lineJoin = 'round';
-      g.beginPath();
-      g.moveTo(S * 0.17, S * 0.22 + dy);
-      g.quadraticCurveTo(S * 0.30, S * 0.80 + dy, S * 0.50, S * 0.80 + dy);
-      g.quadraticCurveTo(S * 0.70, S * 0.80 + dy, S * 0.83, S * 0.22 + dy);
-      g.stroke();
-    };
-    draw(dark, S * 0.30, S * 0.05);                 // тень снизу — петля объёмная
-    draw(`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`, S * 0.26, 0);
-    draw(light, S * 0.10, -S * 0.04);               // блик по верху нити
-    return c;
-  }
-  const TILTS = [-0.13, 0, 0.13];
-  const SPRITES = [];
-  for (const rgb of COLORS) for (const t of TILTS) SPRITES.push(stitch(rgb, t));
+  const YARN = ['rgb(150,139,232)', 'rgb(128,114,219)', 'rgb(176,167,243)'];
+  const YARN_HI = ['rgb(196,189,250)', 'rgb(176,166,243)', 'rgb(214,209,252)'];
+
   const HOLD = 2100;        // сколько держим слово
   const MORPH = 1500;       // сколько перетекаем
   const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -65,37 +39,41 @@
     let shapes = [];          // координаты точек для каждого слова
     let pts = [];             // точки самого слова
     let area = { y: 0, h: 0 };// куда ставим слово
-    let stitchSize = 12;      // размер петли, считается от шага сетки
+    let yarnW = 10;           // толщина нити, считается от шага сетки
     let step = 0; let t0 = 0; let phase = 'hold';
     let raf = 0; let rafTouch = 0; let timer = 0; let touching = false;
     let running = false; let visible = true;
     let pointer = { x: -9999, y: -9999 };
 
-    /** Координаты закрашенных пикселей слова — цели для точек. */
+    /**
+     * Разбираем слово на нити. Идём по рядам и собираем подряд идущие
+     * закрашенные точки в одну нить — её потом и рисуем одной линией.
+     * Короткие огрызки выбрасываем, иначе по краям букв остаётся бахрома.
+     */
     function sample(text, scale, gap, base) {
       const off = document.createElement('canvas');
       const ow = Math.round(w); const oh = Math.round(h);
       off.width = ow; off.height = oh;
       const c = off.getContext('2d');
-      const size = base * scale;
       c.fillStyle = '#fff';
       c.textAlign = 'center';
       c.textBaseline = 'middle';
-      c.font = `800 ${Math.round(size)}px -apple-system, "Segoe UI", Roboto, Arial, sans-serif`;
+      c.font = `800 ${Math.round(base * scale)}px -apple-system, "Segoe UI", Roboto, Arial, sans-serif`;
       c.fillText(text, ow / 2, area.y + area.h / 2);
       const data = c.getImageData(0, 0, ow, oh).data;
-      // Петли ставим рядами со сдвигом через ряд — так это читается как
-      // вязаное полотно, а края букв получаются ровными, без бахромы.
-      const gy = Math.max(3, Math.round(gap * 0.82));
-      const out = [];
-      for (let row = 0, y = 0; y < oh; y += gy, row++) {
-        const off = row % 2 ? gap / 2 : 0;
-        for (let x = off; x < ow; x += gap) {
+      const gy = Math.max(4, Math.round(gap * 1.15));
+      const threads = [];
+      for (let y = Math.round(gy / 2); y < oh; y += gy) {
+        let run = null;
+        for (let x = 0; x < ow; x += gap) {
           const xi = Math.round(x);
-          if (data[(y * ow + xi) * 4 + 3] > 128) out.push(xi, y);
+          const on = data[(y * ow + xi) * 4 + 3] > 120;
+          if (on) { (run ??= []).push(xi, y); continue; }
+          if (run) { if (run.length >= 4) threads.push(run); run = null; }
         }
+        if (run && run.length >= 4) threads.push(run);
       }
-      return out;
+      return threads;
     }
 
     /** Где стоит слово — берём из вёрстки, чтобы холст и разметка не разъезжались. */
@@ -127,52 +105,89 @@
       let gap = 7;
       for (let i = 0; i < 4; i++) {
         shapes = words.map((t, k) => sample(t, SCALE[k] ?? 0.3, gap, base));
-        if (Math.max(...shapes.map((sh) => sh.length / 2)) <= 2000) break;
+        const most = Math.max(...shapes.map((sh) => sh.reduce((a, t) => a + t.length / 2, 0)));
+        if (most <= 2200) break;
         gap += 1;
       }
-      stitchSize = gap * 1.75;
-      const n = Math.max(...shapes.map((sh) => Math.round(sh.length / 2)));
-      keep = shapes.map((sh) => (sh.length / 2) / n);
+      // В каждой нити своё число точек. Берём самое «толстое» слово за основу.
+      const total = (sh) => sh.reduce((a, t) => a + t.length / 2, 0);
+      const n = Math.max(...shapes.map(total));
+      keep = shapes.map((sh) => total(sh) / n);
       pts = Array.from({ length: n }, (_, i) => ({
         x: w / 2 + (Math.random() - 0.5) * w,
         y: h / 2 + (Math.random() - 0.5) * h,
         fx: 0, fy: 0, tx: 0, ty: 0,
         fa: 0, ta: 1, a: 1,
         sw: (Math.random() - 0.5) * 0.9,          // завихрение по дороге
-        ph: Math.random() * 6.28,                 // фаза дыхания — вместо дрожи
+        ph: Math.random() * 6.28,
         sp: 0.5 + Math.random() * 0.7,
-        g: (Math.random() * SPRITES.length) | 0,
+        head: false,                               // начало новой нити
+        g: 0,
       }));
+      yarnW = gap * 0.92;
       aim(0, true);
     }
 
-    /** Раздаём точкам цели для шага i. Лишние уходят вниз и гаснут. */
+    /**
+     * Раздаём точкам цели. Идём нить за нитью, чтобы соседние точки
+     * остались соседями: тогда при перетекании нити тянутся, а не рвутся.
+     * Лишние уходят вниз и гаснут — это и есть воронка.
+     */
     function aim(i, instant) {
-      const shape = shapes[i];
-      const slots = shape.length / 2;
-      const alive = Math.max(1, Math.round(pts.length * keep[i]));
-      pts.forEach((p, k) => {
-        p.fx = p.x; p.fy = p.y; p.fa = p.a;
-        if (k < alive) {
-          const j = (k % slots) * 2;
-          p.tx = shape[j]; p.ty = shape[j + 1]; p.ta = 1;
-        } else {
-          p.tx = p.x + (Math.random() - 0.5) * 120;
-          p.ty = p.y + 90 + Math.random() * 160;
-          p.ta = 0;
+      const threads = shapes[i];
+      let k = 0;
+      for (const t of threads) {
+        for (let j = 0; j < t.length; j += 2) {
+          const p = pts[k];
+          if (!p) break;
+          p.fx = p.x; p.fy = p.y; p.fa = p.a;
+          p.tx = t[j]; p.ty = t[j + 1]; p.ta = 1;
+          p.head = j === 0;
+          p.g = (k * 7 + i * 3) % YARN.length;
+          if (instant) { p.x = p.tx; p.y = p.ty; p.a = p.ta; }
+          k++;
         }
+      }
+      for (; k < pts.length; k++) {
+        const p = pts[k];
+        p.fx = p.x; p.fy = p.y; p.fa = p.a;
+        p.tx = p.x + (Math.random() - 0.5) * 120;
+        p.ty = p.y + 90 + Math.random() * 160;
+        p.ta = 0; p.head = true;
         if (instant) { p.x = p.tx; p.y = p.ty; p.a = p.ta; }
-      });
+      }
+    }
+
+    /**
+     * Нить — это ломаная по её точкам. Рисуем дважды: толстым тёмным
+     * снизу и тонким светлым сверху — получается круглая нитка с бликом.
+     */
+    function strokeRuns(width, colors, dy, alphaMul) {
+      let i = 0;
+      while (i < pts.length) {
+        if (pts[i].a <= 0.05) { i++; continue; }
+        const start = i;
+        let j = i + 1;
+        while (j < pts.length && !pts[j].head && pts[j].a > 0.05) j++;
+        if (j - start > 1) {
+          ctx.beginPath();
+          ctx.moveTo(pts[start].x, pts[start].y + dy);
+          for (let k = start + 1; k < j; k++) ctx.lineTo(pts[k].x, pts[k].y + dy);
+          ctx.globalAlpha = Math.min(1, pts[start].a) * alphaMul;
+          ctx.strokeStyle = colors[pts[start].g];
+          ctx.lineWidth = width;
+          ctx.stroke();
+        }
+        i = j;
+      }
     }
 
     function draw() {
       ctx.clearRect(0, 0, w, h);
-      const s = stitchSize;
-      for (const p of pts) {
-        if (p.a <= 0.02) continue;
-        ctx.globalAlpha = Math.min(1, p.a);
-        ctx.drawImage(SPRITES[p.g], p.x - s / 2, p.y - s / 2, s, s);
-      }
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      strokeRuns(yarnW, YARN, yarnW * 0.18, 1);          // тело нити
+      strokeRuns(yarnW * 0.34, YARN_HI, -yarnW * 0.2, 0.9); // блик
       ctx.globalAlpha = 1;
     }
 
