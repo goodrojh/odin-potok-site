@@ -1109,3 +1109,55 @@ a.work:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-co
 }
 .nch__n { width: 30px; height: 30px; flex: none; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 800; font-size: 14px; }
 .nch b { font-size: 17px; }
+
+/* ---------- экономика канала ---------- */
+.eco { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+.eco__i {
+  flex: 1 1 190px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px 20px; box-shadow: var(--shadow-soft);
+}
+.eco__i--out { background: linear-gradient(150deg, #1c1735, #352b66); border-color: transparent; color: #fff; }
+.eco__t { display: block; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
+.eco__i--out .eco__t { color: rgba(255, 255, 255, .5); }
+.eco__i b { display: block; margin: 10px 0 4px; font-size: clamp(24px, 2.6vw, 32px); font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+.eco__i--out b { color: var(--accent-2); }
+.eco__i i { font-style: normal; font-size: 14px; color: var(--dim); }
+.eco__i--out i { color: rgba(255, 255, 255, .6); }
+.eco__ar { align-self: center; width: 22px; height: 2px; background: var(--line); position: relative; flex: none; }
+.eco__ar::after { content: ''; position: absolute; right: -1px; top: -4px; border: 5px solid transparent; border-left-color: var(--line); }
+.eco__note { margin: 18px 0 0; font-size: 15.5px; color: var(--dim); line-height: 1.6; max-width: 70ch; }
+@media (max-width: 860px) {
+  .eco { flex-direction: column; }
+  .eco__ar { width: 2px; height: 20px; margin-left: 26px; align-self: flex-start; }
+  .eco__ar::after { right: -4px; top: auto; bottom: -1px; border-left-color: transparent; border-top-color: var(--line); }
+}
+
+/* ---------- цена заявки по каналам ---------- */
+.bars { display: grid; gap: 14px; align-content: start; }
+.bar { display: grid; grid-template-columns: 1fr; gap: 7px; }
+.bar__n { font-size: 15px; color: var(--ink); font-weight: 600; }
+.bar__track { height: 14px; background: #fff; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.bar__fill { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); border-radius: 999px; }
+.bar__v { font-size: 15px; font-variant-numeric: tabular-nums; color: var(--dim); }
+@media (min-width: 620px) {
+  .bar { grid-template-columns: 170px 1fr 92px; align-items: center; gap: 14px; }
+  .bar__v { text-align: right; }
+}
+
+/* ---------- план на месяц ---------- */
+.plan { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.plan__i { padding-top: 20px; border-top: 2px solid var(--accent-soft); }
+.plan__w { display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+.plan__i b { display: block; margin: 8px 0 6px; font-size: 18px; }
+.plan__i > span:last-child { display: block; font-size: 15px; color: var(--dim); line-height: 1.55; }
+@media (max-width: 900px) { .plan { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .plan { grid-template-columns: 1fr; } }
+
+/* ---------- советы ---------- */
+.tip { position: relative; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 22px 22px; box-shadow: var(--shadow-soft); }
+.tip__n {
+  position: absolute; top: -14px; left: 22px; width: 30px; height: 30px; border-radius: 10px;
+  background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 14px;
+}
+.tip h3 { margin-top: 6px; font-size: 18.5px; }
+.tip p { font-size: 15.5px; color: var(--dim); line-height: 1.55; }
