@@ -28,6 +28,8 @@
 
   const HOLD = 1100;        // сколько держим слово: дольше — и кажется, что зависло
   const MORPH = 1700;       // сколько перетекаем
+  const STAGGER = 0.3;      // разброс стартов: петли трогаются не все сразу
+  const SPAN = 1 - STAGGER; // сколько длится путь одной петли
   const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   function start(host) {
@@ -49,6 +51,7 @@
     let area = { y: 0, h: 0 };// куда ставим слово
     let cellW = 12; let cellH = 14;   // размер петли: ширина столбика и высота ряда
     let step = 0; let prevStep = 0; let t0 = 0; let phase = 'hold';
+    let span = MORPH;         // это перетекание длиннее, если петель сильно прибавилось
     let clipK = 1;            // насколько проявлен силуэт буквы: 0 — пряжа свободна
     let clipMask = null;      // каким силуэтом режем сейчас: уходящим или приходящим
     let veil = null;          // холст для частичной обрезки
@@ -136,6 +139,7 @@
         fa: 0, ta: 1, a: 1,
         sw: (Math.random() - 0.5) * 0.9,
         ux: 0, uy: 0,                      // отталкивание от курсора, со сглаживанием
+        lag: Math.random() * STAGGER,      // своя очередь трогаться с места
         ph: Math.random() * 6.28,
         sp: 0.5 + Math.random() * 0.7,
         k: 0.95 + Math.random() * 0.1,     // петли чуть разные — ручная вязка
@@ -156,17 +160,33 @@
     function aim(i, instant) {
       const shape = shapes[i];
       const slots = shape.length / 2;
+      // Прежнее слово — родник для вернувшихся петель. После «₽» в работу
+      // возвращаются почти все осыпавшиеся, и если звать их с нижнего края,
+      // пряжа возникает из пустоты целым полотном — глаз читает это как
+      // пропущенные кадры. Пусть вместо этого она выходит из самого знака.
+      const from = shapes[prevStep];
+      let grow = 0;
       pts.forEach((p, k) => {
         p.fx = p.tx; p.fy = p.ty; p.fa = p.ta;   // откуда — прежняя цель, не точка на экране
         if (k < slots) {
+          if (p.fa <= 0.01 && from && from.length) {
+            const j = (Math.random() * (from.length / 2)) | 0;
+            p.fx = from[j * 2]; p.fy = from[j * 2 + 1];
+            grow++;
+          }
           p.tx = shape[k * 2]; p.ty = shape[k * 2 + 1]; p.ta = 1;
         } else {
+          // Осыпь держим у нижнего края: иначе за три шага воронки петли
+          // уезжают на сотни пикселей вниз, и обратно им лететь из пустоты.
           p.tx = p.fx + (Math.random() - 0.5) * 120;
-          p.ty = p.fy + 90 + Math.random() * 160;
+          p.ty = Math.min(p.fy + 90 + Math.random() * 160, h + cellH * 3);
           p.ta = 0;
         }
         if (instant) { p.fx = p.tx; p.fy = p.ty; p.fa = p.ta; p.x = p.tx; p.y = p.ty; p.a = p.ta; }
       });
+      // Чем больше петель возвращается в работу, тем дольше перетекание:
+      // одинаковое время на горстку и на целое полотно смотрится рывком.
+      span = MORPH * (1 + 0.8 * (grow / Math.max(slots, 1)));
     }
 
     /**
@@ -287,20 +307,25 @@
       if (!running) return;
       if (!t0) t0 = now;
 
-      let k = 1;
-      if (phase === 'morph') {
-        k = ease(Math.min(1, (now - t0) / MORPH));
-        // Силуэт отпускаем и подхватываем плавно, с разных масок. Иначе
-        // в начале перетекания срезанные хвосты пряжи возникают из ниоткуда.
-        if (k < 0.45) { clipMask = masks[prevStep]; clipK = Math.max(0, 1 - k / 0.32); }
-        else { clipMask = masks[step]; clipK = Math.max(0, (k - 0.62) / 0.38); }
-      } else if (now - t0 >= HOLD) {
+      // Слово отстояло своё — пускаем перетекание. Смену состояния делаем
+      // до расчёта силуэта, иначе на этом самом кадре старое полотно
+      // режется маской уже нового слова: один кадр невпопад, и глаз видит
+      // рывок, будто кадры пропустили.
+      if (phase === 'hold' && now - t0 >= HOLD) {
         prevStep = step;
         step = (step + 1) % words.length;
         aim(step);
         setCaption(step);
         phase = 'morph'; t0 = now;
-        k = 0;
+      }
+
+      let u = 1;                 // общий ход перетекания, без сглаживания
+      if (phase === 'morph') {
+        u = Math.min(1, (now - t0) / span);
+        // Силуэт отпускаем и подхватываем плавно, с разных масок. Иначе
+        // в начале перетекания срезанные хвосты пряжи возникают из ниоткуда.
+        if (u < 0.5) { clipMask = masks[prevStep]; clipK = Math.max(0, 1 - u / 0.3); }
+        else { clipMask = masks[step]; clipK = Math.max(0, (u - 0.8) / 0.2); }
       }
 
       const t = now * 0.0011;
@@ -309,6 +334,11 @@
       for (const p of pts) {
         let bx; let by;
         if (morphing) {
+          // Своя очередь у каждой петли. Без этого на последнем шаге все
+          // осыпавшиеся петли возвращались одним махом: только что стоял
+          // одинокий «₽» — и разом полный холст пряжи, как будто кадры
+          // пропустили. Теперь они втягиваются потоком.
+          const k = ease(Math.min(1, Math.max(0, (u - p.lag) / SPAN)));
           const arc = Math.sin(k * Math.PI) * p.sw * 60;   // завихрение по дороге
           bx = p.fx + (p.tx - p.fx) * k + arc;
           by = p.fy + (p.ty - p.fy) * k - arc * 0.4;
@@ -335,7 +365,7 @@
         p.y = by + p.uy + Math.cos(t * 0.83 + by * 0.019 + bx * 0.005) * 2.0;
       }
 
-      if (morphing && k >= 1) { phase = 'hold'; clipMask = masks[step]; clipK = 1; t0 = now; }
+      if (morphing && u >= 1) { phase = 'hold'; clipMask = masks[step]; clipK = 1; t0 = now; }
       draw();
     }
 
