@@ -32,33 +32,31 @@ const PLATFORMS = [
 ];
 
 /**
- * Что делаем в каждом канале — страница агентства.
- * gift — на карточке появляется значок «сайт в подарок».
+ * Каналы и цены одним списком — на странице это один блок.
+ * gift — значок «сайт в подарок», once — разовая работа,
+ * p: null — цена считается под задачу.
  */
 const CHANNELS = [
-  { n: 'Яндекс Директ', logo: 'yandex.png', gift: true, d: 'Поиск, РСЯ и ретаргетинг. Семантика под ваши услуги, минус-слова, корректировки ставок по звонкам и сделкам.' },
-  { n: 'Авито', logo: 'avito.png', d: 'Карточки, объявления, автозагрузка и продвижение. Отдельная воронка под площадку, где решают быстро.' },
-  { n: 'Авито Ads', logo: 'avito.png', gift: true, d: 'Медийные размещения на аудиторию площадки: догоняем тех, кто уже смотрел похожие предложения.' },
-  { n: 'ВКонтакте', logo: 'vk.png', gift: true, d: 'Таргет по интересам и look-alike, лид-формы, сообщество и прогрев тех, кто пока не готов.' },
-  { n: 'Telegram Ads', logo: 'telegram.png', gift: true, d: 'Реклама в профильных каналах и ретаргет на подписчиков. Хорошо работает на длинный чек.' },
-  { n: 'SEO-продвижение', c: '#1e1a36', s: 'SEO', d: 'Структура сайта под запросы, тексты, скорость и ссылки. Долгий канал: первые позиции через 3–4 месяца, зато без оплаты за клик.' },
-  { n: '2ГИС и Яндекс Карты', logo: 'yandex-maps.png', d: 'Карточка организации, отзывы, приоритетное размещение. Дешёвые заявки от тех, кто ищет рядом.' },
-  { n: 'DMP One', c: '#6356c8', s: 'DMP', d: 'Сегменты по поведению и look-alike на базе ваших клиентов — там, где обычный таргет уже выдохся.' },
-  { n: 'Настройка CRM', logo: 'amocrm.png', d: 'Воронка, поля, автоматизации, интеграции с каналами. Заявки падают в CRM с источником и записью разговора.' },
-  { n: 'Сквозная аналитика', c: '#1e1a36', s: '∑', d: 'Один отчёт: сколько заявок, по какой цене и что из этого стало деньгами. Без сведения таблиц вручную.' },
-];
-
-/** Прайс агентства: карточка с логотипом площадки и ценой. */
-const PRICES = [
-  { n: 'Яндекс Директ', logo: 'yandex.png', d: 'поиск, РСЯ, ретаргетинг', p: 35000 },
-  { n: 'Авито', logo: 'avito.png', d: 'карточки, объявления, продвижение', p: 35000 },
-  { n: 'Авито Ads', logo: 'avito.png', d: 'медийные размещения', p: 35000 },
-  { n: 'ВКонтакте', logo: 'vk.png', d: 'таргет, лид-формы, сообщество', p: 35000 },
-  { n: 'Telegram Ads', logo: 'telegram.png', d: 'каналы и ретаргет', p: 35000 },
-  { n: 'SEO-продвижение', c: '#1e1a36', s: 'SEO', d: 'структура, тексты, скорость, ссылки', p: 50000 },
-  { n: '2ГИС и Карты', logo: 'yandex-maps.png', d: 'карточки, отзывы, промо', p: 35000 },
-  { n: 'DMP One', c: '#6356c8', s: 'DMP', d: 'сегменты и look-alike', p: 42000 },
-  { n: 'Настройка CRM', logo: 'amocrm.png', d: 'воронка, поля, интеграции — один раз', p: 20000, once: true },
+  { n: 'Яндекс Директ', logo: 'yandex.png', gift: true, p: 35000,
+    d: 'Поиск, РСЯ и ретаргетинг. Семантика под ваши услуги, минус-слова, корректировки ставок по звонкам и сделкам.' },
+  { n: 'Авито', logo: 'avito.png', p: 35000,
+    d: 'Карточки, объявления, автозагрузка и продвижение. Отдельная воронка под площадку, где решают быстро.' },
+  { n: 'Авито Ads', logo: 'avito.png', gift: true, p: 35000,
+    d: 'Медийные размещения на аудиторию площадки: догоняем тех, кто уже смотрел похожие предложения.' },
+  { n: 'ВКонтакте', logo: 'vk.png', gift: true, p: 35000,
+    d: 'Таргет по интересам и look-alike, лид-формы, сообщество и прогрев тех, кто пока не готов.' },
+  { n: 'Telegram Ads', logo: 'telegram.png', gift: true, p: 35000,
+    d: 'Реклама в профильных каналах и ретаргет на подписчиков. Хорошо работает на длинный чек.' },
+  { n: 'SEO-продвижение', c: '#1e1a36', s: 'SEO', p: 50000,
+    d: 'Структура сайта под запросы, тексты, скорость и ссылки. Первые позиции через 3–4 месяца, зато без оплаты за клик.' },
+  { n: '2ГИС и Яндекс Карты', logo: 'yandex-maps.png', p: 35000,
+    d: 'Карточка организации, отзывы, приоритетное размещение. Дешёвые заявки от тех, кто ищет рядом.' },
+  { n: 'DMP One', c: '#6356c8', s: 'DMP', p: 42000,
+    d: 'Сегменты по поведению и look-alike на базе ваших клиентов — там, где обычный таргет уже выдохся.' },
+  { n: 'Настройка CRM', logo: 'amocrm.png', p: 20000, once: true,
+    d: 'Воронка, поля, автоматизации, интеграции с каналами. Заявки падают в CRM с источником и записью разговора.' },
+  { n: 'Сквозная аналитика', c: '#1e1a36', s: '∑', p: null,
+    d: 'Один отчёт: сколько заявок, по какой цене и что из этого стало деньгами. Считаем под вашу связку каналов и CRM.' },
 ];
 
 /**
@@ -190,6 +188,10 @@ function header() {
     <a class="brand" href="index.html"><img src="assets/logo-mark.png" alt="" /> Один поток</a>
     <nav class="nav" id="nav">
       ${links.map((l) => `<a href="${l.href}" class="${l.k === PAGE ? 'is-active' : ''}">${l.t}</a>`).join('')}
+      <div class="nav__cta">
+        <a class="btn btn--ghost btn--sm" href="${CONTACTS.cabinet}" target="_blank" rel="noopener">Войти в кабинет</a>
+        ${cta}
+      </div>
     </nav>
     <div class="head__cta">
       <a class="btn btn--ghost btn--sm" href="${CONTACTS.cabinet}" target="_blank" rel="noopener">Войти</a>
@@ -407,22 +409,12 @@ const giftMark = `<span class="gmark" title="Сайт в подарок при �
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <rect x="3" y="9" width="18" height="12" rx="2" /><path d="M3 13h18M12 9v12" />
     <path d="M12 9S10.5 4 8 4a2.5 2.5 0 0 0 0 5h4zM12 9s1.5-5 4-5a2.5 2.5 0 0 1 0 5h-4z" /></svg>Сайт в подарок</span>`;
-buildList('#channels', CHANNELS, (c) => `<div class="card card--chan rise">${logoChip(c)}
-  <h3 class="mt-s">${esc(c.n)}</h3>${c.gift ? giftMark : ''}<p class="mt-s">${esc(c.d)}</p></div>`);
-buildPlans();
-const priceRow = (p) => `<div class="price-row"><span><span class="price-row__n">${esc(p.n)}</span><br /><span class="price-row__d">${esc(p.d)}</span></span><span class="price-row__p">${esc(p.p)}</span></div>`;
-const workCard = (w) => `<div class="card rise"><h3>${esc(w.n)}</h3><p class="mt-s">${esc(w.d)}</p></div>`;
-buildList('#sales-prices', SALES_PRICES, priceRow);
-buildList('#web-works', WEB_WORKS, workCard);
-buildWorks();
-buildList('#web-prices', WEB_PRICES, priceRow);
-buildList('#web-steps', WEB_STEPS, (x) => `<div class="step rise"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`);
-buildList('#design-works', DESIGN_WORKS, workCard);
-buildList('#design-prices', DESIGN_PRICES, priceRow);
-buildList('#prices-list', PRICES, (x) => `<div class="pcard rise">${logoChip(x, true)}
-  <b class="pcard__n">${esc(x.n)}</b>
-  <span class="pcard__d">${esc(x.d)}</span>
-  <span class="pcard__p">${x.p.toLocaleString('ru-RU').replace(/ /g, ' ')} ₽<i>${x.once ? 'один раз' : 'в месяц'}</i></span>
+const money = (n) => n.toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₽';
+buildList('#channels', CHANNELS, (c) => `<div class="chan rise">
+  <div class="chan__head">${logoChip(c)}<b class="chan__n">${esc(c.n)}</b></div>
+  ${c.gift ? giftMark : ''}
+  <p class="chan__d">${esc(c.d)}</p>
+  <div class="chan__p">${c.p ? `${money(c.p)}<i>${c.once ? 'один раз' : 'в месяц'}</i>` : 'считаем<i>под задачу</i>'}</div>
 </div>`);
 applyContacts();
 watchRise();

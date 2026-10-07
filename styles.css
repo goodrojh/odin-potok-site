@@ -997,3 +997,85 @@ a.work:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-co
 .section--ink .formcard .form__note { color: var(--dim); }
 .section--ink .formcard h3 { color: var(--ink); }
 .section--ink .formcard .dim { color: var(--dim); }
+
+.dg__down { display: none; width: 2px; height: 34px; margin: 10px auto; background: #d9d2f0; position: relative; }
+.dg__down::after { content: ''; position: absolute; bottom: -1px; left: -5px; border: 6px solid transparent; border-top-color: #d9d2f0; }
+
+/* ---------- карточка канала с ценой ---------- */
+.chans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.chan {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.chan:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--accent); }
+.chan__head { display: flex; align-items: center; gap: 12px; }
+.chan__n { font-size: 17.5px; letter-spacing: -.01em; }
+.chan__d { margin: 12px 0 0; font-size: 15px; color: var(--dim); line-height: 1.5; flex: 1; }
+.chan__p {
+  margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line);
+  font-size: 21px; font-weight: 800; letter-spacing: -.02em;
+}
+.chan__p i { display: block; font-style: normal; font-size: 13px; font-weight: 400; color: var(--dim); letter-spacing: 0; }
+.chan .gmark { align-self: flex-start; margin-top: 12px; }
+@media (max-width: 1040px) { .chans { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .chans { grid-template-columns: 1fr; } }
+
+/* Действия в меню нужны только на телефоне, в открытом меню. */
+.nav__cta { display: none; }
+
+/* ---------- слоган ---------- */
+.slogan__hi { display: block; margin-top: .18em; color: var(--accent-2); }
+
+/* ================================================================== */
+/* Телефон                                                            */
+/* ================================================================== */
+@media (max-width: 700px) {
+  /* Шапка: кнопка во всю ширину рядом с логотипом выглядела непропорционально.
+     Оставляем логотип и бургер, а действия уезжают в открытое меню. */
+  .head__cta .btn { display: none; }
+  .head__in { height: 64px; gap: 12px; }
+  .brand { font-size: 17px; }
+  .brand img { width: 26px; height: 26px; }
+  .burger { font-size: 26px; padding: 4px; }
+  .nav.is-open { top: 64px; }
+  .nav.is-open .nav__cta { display: grid; gap: 10px; margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .nav.is-open .nav__cta .btn { display: block; text-align: center; }
+
+  /* Схема: шесть логотипов в ряд не читались — ставим в два ряда,
+     а веер линий заменяем одной стрелкой вниз. */
+  .dg__row { grid-template-columns: repeat(3, 1fr); gap: 14px 6px; }
+  .dg__chip img, .dg__chip b { width: 34px; height: 34px; }
+  .dg__chip i { font-size: 11.5px; }
+  .dg__web { display: none; }
+  .dg__down { display: block; }
+  .dg__you { flex-direction: column; gap: 8px; text-align: center; }
+  .dg__time { margin-top: 16px; }
+  .vs__col { padding: 20px 18px; }
+
+  /* Сравнение: каждая строка становится карточкой, иначе это простыня. */
+  .cmp { background: none; border: 0; display: grid; gap: 14px; }
+  .cmp__row {
+    display: grid; grid-template-columns: 1fr; gap: 7px; padding: 16px 18px;
+    background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 16px;
+  }
+  .cmp__k { font-size: 12.5px; letter-spacing: .05em; text-transform: uppercase; color: rgba(255, 255, 255, .45); }
+  .cmp__row > span:not(.cmp__k) { font-size: 14.5px; }
+  .cmp__row > span[data-l]:not(.cmp__best)::before { content: attr(data-l) ' — '; color: rgba(255, 255, 255, .38); }
+  .cmp__row > .cmp__best {
+    margin: 6px 0 0; padding: 11px 14px; border-radius: 12px;
+    background: rgba(138, 127, 224, .2); font-size: 15.5px;
+  }
+  .cmp__row > .cmp__best::before { content: '✓'; color: var(--accent-2); margin-right: 8px; font-weight: 800; }
+
+  /* Разбор: шаги становятся дорожкой — номер слева, текст справа. */
+  .audit__grid { gap: 14px; }
+  .audit__i {
+    display: grid; grid-template-columns: 32px 1fr; gap: 4px 14px; align-items: start;
+    border-top: 0; padding: 0;
+  }
+  .audit__n { position: static; grid-column: 1; grid-row: 1 / span 2; width: 32px; height: 32px; }
+  .audit__i b { grid-column: 2; margin: 3px 0 0; }
+  .audit__i span:not(.audit__n) { grid-column: 2; }
+}
