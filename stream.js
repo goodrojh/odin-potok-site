@@ -17,8 +17,14 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const COLORS = [[138, 127, 224], [124, 110, 214], [173, 164, 240]];
 
-  // Шерсть: светлая нить, тёплый блик, глубокая тень между жгутами.
-  const WOOL = { body: '#cdc4ee', light: '#f2eefd', mid: '#a99ede', dark: '#5b4f9f', deep: '#241d47' };
+  // Шерсть: тёплая светлая пряжа, глубокая тень в просветах между петлями.
+  const WOOL = {
+    deep: '#1d1740',      // тень под петлёй и фон полотна
+    under: '#6354a8',     // изнанка пряди
+    body: '#c9bfec',      // тело пряди
+    bodyB: '#b7abe3',     // вторая прядь чуть темнее — петля круглее
+    light: '#f4f1fe',     // блик по верху
+  };
 
   const HOLD = 2100;        // сколько держим слово
   const MORPH = 1500;       // сколько перетекаем
@@ -32,11 +38,13 @@
     const capBox = host.closest('.flowband')?.querySelector('[data-flow-cap]');
     // Каждое следующее слово мельче предыдущего: точек на него нужно меньше,
     // и воронка получается сама собой — не «часть исчезла», а «осталось меньше».
-    const SCALE = [1, 0.74, 0.55, 0.4, 0.32];
+    const SCALE = [1, 0.78, 0.6, 0.52, 0.46];
+    const MIN_ROWS = 9;      // меньше рядов петель — и буква уже не читается
     let keep = words.map(() => 1);
 
     let w = 0; let h = 0; let dpr = 1;
     let shapes = [];          // координаты точек для каждого слова
+    let masks = [];           // силуэты слов: по ним обрезаем связанное полотно
     let pts = [];             // точки самого слова
     let area = { y: 0, h: 0 };// куда ставим слово
     let cellW = 12; let cellH = 14;   // размер петли: ширина столбика и высота ряда
@@ -46,9 +54,9 @@
     let pointer = { x: -9999, y: -9999 };
 
     /**
-     * Разбираем слово на вертикальные жгуты. Идём по столбикам сверху
-     * вниз и собираем подряд идущие закрашенные клетки в одну нить —
-     * её потом и рисуем целиком, как шнур от верха буквы до низа.
+     * Разбираем слово на петли: столбики строго друг под другом, ряды
+     * чуть плотнее, чем высота петли, — тогда ряды находят друг на друга
+     * и полотно получается сплошным, как на спицах.
      */
     function sample(text, scale, gap, base) {
       const off = document.createElement('canvas');
@@ -61,19 +69,16 @@
       c.font = `800 ${Math.round(base * scale)}px -apple-system, "Segoe UI", Roboto, Arial, sans-serif`;
       c.fillText(text, ow / 2, area.y + area.h / 2);
       const data = c.getImageData(0, 0, ow, oh).data;
-      const gy = Math.max(3, Math.round(gap * 0.5));
-      const threads = [];
-      for (let x = Math.round(gap / 2); x < ow; x += gap) {
-        const xi = Math.round(x);
-        let run = null;
-        for (let y = 0; y < oh; y += gy) {
-          const on = data[(y * ow + xi) * 4 + 3] > 110;
-          if (on) { (run ??= []).push(xi, y); continue; }
-          if (run) { if (run.length >= 4) threads.push(run); run = null; }
+      masks.push(off);                        // силуэт слова для обрезки полотна
+      const gy = Math.max(4, Math.round(gap * 0.78));
+      const out = [];
+      for (let y = Math.round(gy / 2); y < oh; y += gy) {
+        for (let x = Math.round(gap / 2); x < ow; x += gap) {
+          const xi = Math.round(x);
+          if (data[(y * ow + xi) * 4 + 3] > 100) out.push(xi, y);
         }
-        if (run && run.length >= 4) threads.push(run);
       }
-      return threads;
+      return out;
     }
 
     /** Где стоит слово — берём из вёрстки, чтобы холст и разметка не разъезжались. */
@@ -102,116 +107,117 @@
       // так видно, что поток физически усыхает, а не просто меняет надпись.
       const longest = Math.max(...words.map((t) => t.length));
       const base = Math.min(area.h * 0.92, (w * 0.95) / Math.max(3.2, longest * 0.55));
-      let gap = Math.max(7, Math.round(base / 17));
+      let gap = Math.max(8, Math.round(base / 19));
       for (let i = 0; i < 5; i++) {
-        shapes = words.map((t, k) => sample(t, SCALE[k] ?? 0.3, gap, base));
-        const most = Math.max(...shapes.map((sh) => sh.reduce((a, t) => a + t.length / 2, 0)));
-        if (most <= 3200) break;
+        masks = [];
+        // Ниже этого кегля крупная вязка перестаёт складываться в букву:
+        // на «₽» оставалось шесть рядов петель и читался комок пряжи.
+        // Короткому слову поднимаем кегль отдельно: усыхание и так видно по
+        // числу букв, а последний знак — это итог, его надо разглядеть.
+        const floor = (gap * 0.78 * MIN_ROWS) / (base * 0.7);
+        const size = (t, k) => Math.max(SCALE[k] ?? 0.3, floor, t.length <= 2 ? 0.72 : 0);
+        shapes = words.map((t, k) => sample(t, size(t, k), gap, base));
+        const most = Math.max(...shapes.map((sh) => sh.length / 2));
+        if (most <= 2600) break;
         gap += 2;
       }
-      const total = (sh) => sh.reduce((a, t) => a + t.length / 2, 0);
-      const n = Math.max(...shapes.map(total));
-      keep = shapes.map((sh) => total(sh) / n);
+      const n = Math.max(...shapes.map((sh) => sh.length / 2));
+      keep = shapes.map((sh) => (sh.length / 2) / n);
       pts = Array.from({ length: n }, () => ({
         x: w / 2 + (Math.random() - 0.5) * w,
         y: h / 2 + (Math.random() - 0.5) * h,
         fx: 0, fy: 0, tx: 0, ty: 0,
         fa: 0, ta: 1, a: 1,
-        sw: (Math.random() - 0.5) * 0.9,          // завихрение по дороге
+        sw: (Math.random() - 0.5) * 0.9,
         ph: Math.random() * 6.28,
         sp: 0.5 + Math.random() * 0.7,
-        head: false,                               // начало нового жгута
+        k: 0.95 + Math.random() * 0.1,     // петли чуть разные — ручная вязка
       }));
-      cellW = gap * 1.08;                          // жгуты смыкаются без просветов
-      cellH = Math.max(3, Math.round(gap * 0.5));
+      cellW = gap;
+      cellH = Math.max(4, Math.round(gap * 0.78));
       aim(0, true);
     }
 
-    /**
-     * Раздаём цели жгут за жгутом, чтобы соседние точки остались
-     * соседями: тогда при перетекании нити тянутся, а не рвутся.
-     * Лишние уходят вниз и гаснут — это и есть воронка.
-     */
+    /** Раздаём цели. Лишние уходят вниз и гаснут — это и есть воронка. */
     function aim(i, instant) {
-      const threads = shapes[i];
-      let k = 0;
-      for (const t of threads) {
-        for (let j = 0; j < t.length; j += 2) {
-          const p = pts[k];
-          if (!p) break;
-          p.fx = p.x; p.fy = p.y; p.fa = p.a;
-          p.tx = t[j]; p.ty = t[j + 1]; p.ta = 1;
-          p.head = j === 0;
-          if (instant) { p.x = p.tx; p.y = p.ty; p.a = p.ta; }
-          k++;
-        }
-      }
-      for (; k < pts.length; k++) {
-        const p = pts[k];
+      const shape = shapes[i];
+      const slots = shape.length / 2;
+      pts.forEach((p, k) => {
         p.fx = p.x; p.fy = p.y; p.fa = p.a;
-        p.tx = p.x + (Math.random() - 0.5) * 120;
-        p.ty = p.y + 90 + Math.random() * 160;
-        p.ta = 0; p.head = true;
+        if (k < slots) {
+          p.tx = shape[k * 2]; p.ty = shape[k * 2 + 1]; p.ta = 1;
+        } else {
+          p.tx = p.x + (Math.random() - 0.5) * 120;
+          p.ty = p.y + 90 + Math.random() * 160;
+          p.ta = 0;
+        }
         if (instant) { p.x = p.tx; p.y = p.ty; p.a = p.ta; }
-      }
-    }
-
-    /** Обходим жгуты: каждый — непрерывная цепочка точек от головы до разрыва. */
-    function eachThread(fn) {
-      let i = 0;
-      while (i < pts.length) {
-        if (pts[i].a <= 0.05) { i++; continue; }
-        const a = i;
-        let b = i + 1;
-        while (b < pts.length && !pts[b].head && pts[b].a > 0.05) b++;
-        if (b - a > 1) fn(a, b);
-        i = b;
-      }
-    }
-
-    function strokeThread(a, b, width, color, dx, dy) {
-      ctx.beginPath();
-      ctx.moveTo(pts[a].x + dx, pts[a].y + dy);
-      for (let k = a + 1; k < b; k++) ctx.lineTo(pts[k].x + dx, pts[k].y + dy);
-      ctx.globalAlpha = Math.min(1, pts[a].a);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = width;
-      ctx.stroke();
+      });
     }
 
     /**
-     * Полотно рисуется слоями, а не по одной петле: сначала все тени,
-     * потом все тела жгутов, потом блики и в конце перехлёсты. Иначе
-     * тень соседнего жгута ложится поверх уже нарисованного.
+     * Одна петля — две толстые пряди, сходящиеся внизу. Рисуем их снизу
+     * вверх слоями: тень, изнанка, тело, блик. Петли идут рядами сверху
+     * вниз, поэтому нижний ряд перекрывает хвосты верхнего — ровно так
+     * ложится пряжа на спицах.
      */
+    function stitch(p) {
+      const W = cellW * p.k; const H = cellH * p.k;
+      const T = W * 0.46;                       // толщина пряди
+      const x = p.x; const y = p.y;
+      const top = y - H * 0.95; const bot = y + H * 0.40;
+
+      const leg = (sx, cx) => {
+        ctx.beginPath();
+        ctx.moveTo(sx, top);
+        ctx.quadraticCurveTo(cx, y + H * 0.18, x, bot);
+        ctx.stroke();
+      };
+      const pair = (width, color, dx, dy) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.save();
+        ctx.translate(dx, dy);
+        leg(x - W * 0.44, x - W * 0.40);
+        leg(x + W * 0.44, x + W * 0.40);
+        ctx.restore();
+      };
+
+      pair(T * 1.3, WOOL.deep, 0, T * 0.30);    // тень в просвете
+      pair(T * 1.08, WOOL.under, 0, T * 0.12);  // изнанка пряди
+      pair(T, WOOL.body, 0, 0);                 // тело
+      pair(T * 0.30, WOOL.light, -T * 0.16, -T * 0.20); // блик по верху
+    }
+
     function draw() {
       ctx.clearRect(0, 0, w, h);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      const W = cellW;
-      eachThread((a, b) => strokeThread(a, b, W * 1.22, WOOL.deep, 0, W * 0.16));   // тень под жгутом
-      eachThread((a, b) => strokeThread(a, b, W * 1.02, WOOL.dark, 0, 0));          // тёмный край нити
-      eachThread((a, b) => strokeThread(a, b, W * 0.78, WOOL.body, 0, -W * 0.05));  // тело
-      eachThread((a, b) => strokeThread(a, b, W * 0.26, WOOL.light, -W * 0.14, -W * 0.16)); // блик
 
-      // Кручение: по нити идут косые бороздки, а не поперечные перемычки —
-      // поперечные читались как стыки капсул, а не как пряжа.
-      ctx.globalAlpha = 0.4;
-      ctx.strokeStyle = WOOL.dark;
-      ctx.lineWidth = W * 0.13;
-      eachThread((a, b) => {
-        // Соседние жгуты крутим в разные стороны — так полотно читается
-        // как косичка, а не как полосатая штриховка.
-        const dir = Math.round(pts[a].x / Math.max(1, cellW)) % 2 ? 1 : -1;
-        for (let k = a + 1; k < b; k += 3) {
-          const p = pts[k];
-          ctx.beginPath();
-          ctx.moveTo(p.x - W * 0.34, p.y + W * 0.26 * dir);
-          ctx.lineTo(p.x + W * 0.34, p.y - W * 0.26 * dir);
-          ctx.stroke();
-        }
-      });
+      // Подложка: сплошное тёмное полотно, чтобы фон не просвечивал.
+      ctx.fillStyle = WOOL.deep;
+      for (const p of pts) {
+        if (p.a <= 0.05) continue;
+        ctx.globalAlpha = Math.min(1, p.a);
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, cellW * 0.66, cellH * 0.8, 0, 0, 6.3);
+        ctx.fill();
+      }
+      for (const p of pts) {
+        if (p.a <= 0.05) continue;
+        ctx.globalAlpha = Math.min(1, p.a);
+        stitch(p);
+      }
       ctx.globalAlpha = 1;
+
+      // Пока слово стоит — срезаем всё, что вылезло за букву: петли
+      // торчали хвостами и буквы читались как пятно. На перетекании
+      // обрезки нет, иначе пряжа не смогла бы разлететься.
+      if (phase === 'hold' && masks[step]) {
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.drawImage(masks[step], 0, 0, w, h);
+        ctx.globalCompositeOperation = 'source-over';
+      }
     }
 
     /**
