@@ -49,6 +49,8 @@
     let area = { y: 0, h: 0 };// куда ставим слово
     let cellW = 12; let cellH = 14;   // размер петли: ширина столбика и высота ряда
     let step = 0; let t0 = 0; let phase = 'hold';
+    let clipK = 1;            // насколько проявлен силуэт буквы: 0 — пряжа свободна
+    let veil = null;          // холст для частичной обрезки
     let raf = 0; let rafTouch = 0; let timer = 0; let touching = false;
     let running = false; let visible = true;
     let pointer = { x: -9999, y: -9999 };
@@ -210,14 +212,33 @@
       }
       ctx.globalAlpha = 1;
 
-      // Пока слово стоит — срезаем всё, что вылезло за букву: петли
-      // торчали хвостами и буквы читались как пятно. На перетекании
-      // обрезки нет, иначе пряжа не смогла бы разлететься.
-      if (phase === 'hold' && masks[step]) {
+      // Срезаем всё, что вылезло за букву: петли торчали хвостами и слово
+      // читалось как пятно. В начале перетекания обрезки нет, иначе пряжа
+      // не смогла бы разлететься, а к концу силуэт проявляем постепенно —
+      // при резком включении край буквы щёлкал с лохматого на ровный.
+      const mask = masks[step];
+      if (mask && clipK > 0.002) {
         ctx.globalCompositeOperation = 'destination-in';
-        ctx.drawImage(masks[step], 0, 0, w, h);
+        ctx.drawImage(clipK >= 0.998 ? mask : partial(mask), 0, 0, w, h);
         ctx.globalCompositeOperation = 'source-over';
       }
+    }
+
+    /**
+     * Полупрозрачный силуэт: внутри буквы непрозрачно, снаружи — остаток
+     * от clipK. Через такую маску лишние петли гаснут, а сама буква нет.
+     */
+    function partial(mask) {
+      if (!veil || veil.width !== mask.width || veil.height !== mask.height) {
+        veil = document.createElement('canvas');
+        veil.width = mask.width; veil.height = mask.height;
+      }
+      const g = veil.getContext('2d');
+      g.clearRect(0, 0, veil.width, veil.height);
+      g.fillStyle = `rgba(0,0,0,${1 - clipK})`;
+      g.fillRect(0, 0, veil.width, veil.height);
+      g.drawImage(mask, 0, 0);
+      return veil;
     }
 
     /**
@@ -237,6 +258,7 @@
     function frame(now) {
       if (!t0) t0 = now;
       const k = ease(Math.min(1, (now - t0) / MORPH));
+      clipK = Math.max(0, (k - 0.55) / 0.45);
       for (const p of pts) {
         const arc = Math.sin(k * Math.PI) * p.sw * 60;
         p.x = p.fx + (p.tx - p.fx) * k + arc;
@@ -244,7 +266,7 @@
         p.a = p.fa + (p.ta - p.fa) * k;
       }
       draw();
-      if (k >= 1) { phase = 'hold'; snap(); draw(); hold(); return; }
+      if (k >= 1) { phase = 'hold'; clipK = 1; snap(); draw(); hold(); return; }
       raf = requestAnimationFrame(frame);
     }
 
@@ -315,7 +337,7 @@
     let resizeTimer = 0;
     addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; aim(0, true); setCaption(0); draw(); if (running) hold(); }, 200);
+      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; clipK = 1; aim(0, true); setCaption(0); draw(); if (running) hold(); }, 200);
     }, { passive: true });
     document.addEventListener('visibilitychange', () => play(visible));
     const band = host.parentElement;
