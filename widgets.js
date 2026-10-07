@@ -34,13 +34,15 @@
     // Спрашиваем только то, что предприниматель знает про себя: нишу, чек
     // и сколько продаж ему нужно. Цену заявки и доходимость до сделки
     // подставляем мы — за этим к агентству и приходят.
-    const st = { i: 0, check: 60000, sales: 10 };
+    // На странице ниши калькулятор сразу открыт на ней.
+    const want = root.dataset.niche || '';
+    const st = { i: Math.max(0, NICHES.findIndex((x) => x.n === want)), check: 60000, sales: 10 };
 
     root.innerHTML = `
       <div class="calc__in">
         <label class="calc__f">
           <span>Чем занимаетесь</span>
-          <select id="cfNiche" class="calc__sel">${NICHES.map((x, i) => `<option value="${i}">${esc(x.n)}</option>`).join('')}</select>
+          <select id="cfNiche" class="calc__sel">${NICHES.map((x, i) => `<option value="${i}"${i === st.i ? ' selected' : ''}>${esc(x.n)}</option>`).join('')}</select>
         </label>
         <label class="calc__f">
           <span>Средний чек<b class="calc__v" id="cvCheck"></b></span>
