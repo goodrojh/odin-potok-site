@@ -135,6 +135,7 @@
         fx: 0, fy: 0, tx: 0, ty: 0,
         fa: 0, ta: 1, a: 1,
         sw: (Math.random() - 0.5) * 0.9,
+        ux: 0, uy: 0,                      // отталкивание от курсора, со сглаживанием
         ph: Math.random() * 6.28,
         sp: 0.5 + Math.random() * 0.7,
         k: 0.95 + Math.random() * 0.1,     // петли чуть разные — ручная вязка
@@ -152,20 +153,19 @@
      * дыхание полотна, и если запомнить уже сдвинутую точку, то на первом
      * же кадре перетекания волна прибавится второй раз и слово дёрнется.
      */
-    function aim(i, instant, now = performance.now()) {
+    function aim(i, instant) {
       const shape = shapes[i];
       const slots = shape.length / 2;
       pts.forEach((p, k) => {
-        sway(p, now, off);
-        p.fx = p.x - off.x; p.fy = p.y - off.y; p.fa = p.a;
+        p.fx = p.tx; p.fy = p.ty; p.fa = p.ta;   // откуда — прежняя цель, не точка на экране
         if (k < slots) {
           p.tx = shape[k * 2]; p.ty = shape[k * 2 + 1]; p.ta = 1;
         } else {
-          p.tx = p.x + (Math.random() - 0.5) * 120;
-          p.ty = p.y + 90 + Math.random() * 160;
+          p.tx = p.fx + (Math.random() - 0.5) * 120;
+          p.ty = p.fy + 90 + Math.random() * 160;
           p.ta = 0;
         }
-        if (instant) { p.x = p.tx; p.y = p.ty; p.a = p.ta; }
+        if (instant) { p.fx = p.tx; p.fy = p.ty; p.fa = p.ta; p.x = p.tx; p.y = p.ty; p.a = p.ta; }
       });
     }
 
@@ -232,7 +232,7 @@
       // и полотно выходило дырявым.
       const blit = (img) => {
         for (const p of pts) {
-          if (p.a <= 0.05) continue;
+          if (p.a <= 0.012) continue;   // гасим до конца: на пяти процентах петля ещё видна
           ctx.globalAlpha = p.a < 1 ? p.a : 1;
           ctx.drawImage(img, p.x - spriteBox.ox * p.k, p.y - spriteBox.oy * p.k,
                         spriteBox.w * p.k, spriteBox.h * p.k);
@@ -274,65 +274,68 @@
     }
 
     /**
-     * Полотно дышит и в покое: петли ходят на пиксель с небольшим сдвигом
-     * фазы по соседям, поэтому волна идёт по ткани, а не дёргает каждую
-     * петлю сама по себе. Силуэт буквы при этом задаёт неподвижная маска,
-     * так что край остаётся ровным и мерцать нечему.
-     */
-    const off = { x: 0, y: 0 };   // куда волна сдвигает петлю на этом кадре
-    function sway(p, now, out) {
-      const t = now * 0.0011;
-      out.x = Math.sin(t + p.tx * 0.011) * 1.8;
-      out.y = Math.cos(t * 0.83 + p.ty * 0.019 + p.tx * 0.005) * 2.0;
-    }
-
-    /**
-     * Кадры идут непрерывно: и пока слово перетекает, и пока стоит. Раньше
-     * в покое не рисовался ни один кадр — слово вставало намертво, а потом
-     * резко срывалось с места, и это читалось как смена слайдов.
+     * У каждой петли есть опорное положение: в покое это её место в слове,
+     * на перетекании — точка на пути между словами. Опора меняется
+     * непрерывно, поэтому всё, что от неё считается, тоже непрерывно.
+     *
+     * Волну и отталкивание от курсора раньше считали от цели, а цель в
+     * момент смены слова менялась разом — фаза волны прыгала, и полотно
+     * щёлкало на каждом стыке. От опоры такого быть не может.
      */
     function tick(now) {
       raf = requestAnimationFrame(tick);
       if (!running) return;
       if (!t0) t0 = now;
 
+      let k = 1;
       if (phase === 'morph') {
-        const k = ease(Math.min(1, (now - t0) / MORPH));
-        // Силуэт отпускаем и подхватываем плавно, с разных масок. Раньше
-        // в начале перетекания обрезка выключалась разом: срезанные хвосты
-        // пряжи возникали из ниоткуда одним кадром — это и была склейка.
+        k = ease(Math.min(1, (now - t0) / MORPH));
+        // Силуэт отпускаем и подхватываем плавно, с разных масок. Иначе
+        // в начале перетекания срезанные хвосты пряжи возникают из ниоткуда.
         if (k < 0.45) { clipMask = masks[prevStep]; clipK = Math.max(0, 1 - k / 0.32); }
         else { clipMask = masks[step]; clipK = Math.max(0, (k - 0.62) / 0.38); }
-        for (const p of pts) {
-          sway(p, now, off);
-          const arc = Math.sin(k * Math.PI) * p.sw * 60;
-          p.x = p.fx + (p.tx - p.fx) * k + arc + off.x;
-          p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4 + off.y;
-          p.a = p.fa + (p.ta - p.fa) * k;
-        }
-        if (k >= 1) { phase = 'hold'; clipMask = masks[step]; clipK = 1; t0 = now; }
       } else if (now - t0 >= HOLD) {
         prevStep = step;
         step = (step + 1) % words.length;
-        aim(step, false, now);
+        aim(step);
         setCaption(step);
         phase = 'morph'; t0 = now;
-      } else {
-        const R2 = 11000;
-        for (const p of pts) {
-          sway(p, now, off);
-          let gx = p.tx + off.x; let gy = p.ty + off.y;
-          const dx = p.tx - pointer.x; const dy = p.ty - pointer.y;
-          const d2 = dx * dx + dy * dy;
-          if (d2 < R2 && d2 > 0.01) {        // полотно расходится под курсором
-            const f = (1 - d2 / R2) * 26 / Math.sqrt(d2);
-            gx += dx * f; gy += dy * f;
-          }
-          p.x += (gx - p.x) * 0.18;
-          p.y += (gy - p.y) * 0.18;
-          p.a = p.ta;
-        }
+        k = 0;
       }
+
+      const t = now * 0.0011;
+      const R2 = 11000;
+      const morphing = phase === 'morph';
+      for (const p of pts) {
+        let bx; let by;
+        if (morphing) {
+          const arc = Math.sin(k * Math.PI) * p.sw * 60;   // завихрение по дороге
+          bx = p.fx + (p.tx - p.fx) * k + arc;
+          by = p.fy + (p.ty - p.fy) * k - arc * 0.4;
+          p.a = p.fa + (p.ta - p.fa) * k;
+        } else {
+          bx = p.tx; by = p.ty; p.a = p.ta;
+        }
+
+        // Полотно расходится под курсором. Сглаживаем, чтобы ткань тянулась
+        // за мышью с небольшой оттяжкой, а не прилипала к ней намертво.
+        let px = 0; let py = 0;
+        const dx = bx - pointer.x; const dy = by - pointer.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < R2 && d2 > 0.01) {
+          const f = (1 - d2 / R2) * 26 / Math.sqrt(d2);
+          px = dx * f; py = dy * f;
+        }
+        p.ux += (px - p.ux) * 0.18;
+        p.uy += (py - p.uy) * 0.18;
+
+        // Дыхание полотна: фаза плывёт по ткани, поэтому соседние петли
+        // идут почти вместе — это волна, а не дрожь каждой по отдельности.
+        p.x = bx + p.ux + Math.sin(t + bx * 0.011) * 1.8;
+        p.y = by + p.uy + Math.cos(t * 0.83 + by * 0.019 + bx * 0.005) * 2.0;
+      }
+
+      if (morphing && k >= 1) { phase = 'hold'; clipMask = masks[step]; clipK = 1; t0 = now; }
       draw();
     }
 
@@ -359,7 +362,7 @@
     let resizeTimer = 0;
     addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; clipK = 1; t0 = 0; aim(0, true); setCaption(0); draw(); }, 200);
+      resizeTimer = setTimeout(() => { build(); step = 0; prevStep = 0; phase = 'hold'; clipMask = null; clipK = 1; t0 = 0; aim(0, true); setCaption(0); draw(); }, 200);
     }, { passive: true });
     document.addEventListener('visibilitychange', () => play(visible));
     const band = host.parentElement;
