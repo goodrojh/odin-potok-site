@@ -26,8 +26,8 @@
     light: '#f4f1fe',     // блик по верху
   };
 
-  const HOLD = 2100;        // сколько держим слово
-  const MORPH = 1500;       // сколько перетекаем
+  const HOLD = 1500;        // сколько держим слово
+  const MORPH = 1900;       // сколько перетекаем: дольше — значит плавнее
   const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   function start(host) {
@@ -51,7 +51,10 @@
     let step = 0; let t0 = 0; let phase = 'hold';
     let clipK = 1;            // насколько проявлен силуэт буквы: 0 — пряжа свободна
     let veil = null;          // холст для частичной обрезки
-    let raf = 0; let rafTouch = 0; let timer = 0; let touching = false;
+    let back = null;          // тёмная подложка петли
+    let yarn = null;          // сама пряжа: четыре слоя прядей
+    let spriteBox = null;     // размеры спрайта и где внутри него центр петли
+    let raf = 0;
     let running = false; let visible = true;
     let pointer = { x: -9999, y: -9999 };
 
@@ -137,6 +140,7 @@
       }));
       cellW = gap;
       cellH = Math.max(4, Math.round(gap * 0.78));
+      buildSprite();
       aim(0, true);
     }
 
@@ -158,58 +162,78 @@
     }
 
     /**
-     * Одна петля — две толстые пряди, сходящиеся внизу. Рисуем их снизу
-     * вверх слоями: тень, изнанка, тело, блик. Петли идут рядами сверху
-     * вниз, поэтому нижний ряд перекрывает хвосты верхнего — ровно так
-     * ложится пряжа на спицах.
+     * Одна петля — две толстые пряди, сходящиеся внизу: тень, изнанка,
+     * тело, блик. Рисуем её ровно один раз в отдельный холст, а на кадре
+     * только копируем. Раньше каждая из двух с половиной тысяч петель
+     * обводилась заново — выходило восемь кадров в секунду, то есть
+     * слайд-шоу с рывками.
      */
-    function stitch(p) {
-      const W = cellW * p.k; const H = cellH * p.k;
+    function buildSprite() {
+      const W = cellW; const H = cellH;
       const T = W * 0.46;                       // толщина пряди
-      const x = p.x; const y = p.y;
-      const top = y - H * 0.95; const bot = y + H * 0.40;
+      const padX = W * 0.90; const padTop = W * 1.20; const padBot = W * 0.82;
+      const bw = padX * 2; const bh = padTop + padBot;
+      const x = padX; const y = padTop;
+      const blank = () => {
+        const c = document.createElement('canvas');
+        c.width = Math.ceil(bw * dpr); c.height = Math.ceil(bh * dpr);
+        const g = c.getContext('2d');
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.lineCap = 'round'; g.lineJoin = 'round';
+        return [c, g];
+      };
 
+      // Подложка: без неё между петлями просвечивает фон страницы.
+      const [bc, bg] = blank();
+      bg.fillStyle = WOOL.deep;
+      bg.beginPath();
+      bg.ellipse(x, y, W * 0.80, H * 0.95, 0, 0, 6.3);
+      bg.fill();
+      back = bc;
+
+      const [yc, g] = blank();
+      const top = y - H * 0.95; const bot = y + H * 0.40;
       const leg = (sx, cx) => {
-        ctx.beginPath();
-        ctx.moveTo(sx, top);
-        ctx.quadraticCurveTo(cx, y + H * 0.18, x, bot);
-        ctx.stroke();
+        g.beginPath();
+        g.moveTo(sx, top);
+        g.quadraticCurveTo(cx, y + H * 0.18, x, bot);
+        g.stroke();
       };
       const pair = (width, color, dx, dy) => {
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.save();
-        ctx.translate(dx, dy);
+        g.strokeStyle = color;
+        g.lineWidth = width;
+        g.save();
+        g.translate(dx, dy);
         leg(x - W * 0.44, x - W * 0.40);
         leg(x + W * 0.44, x + W * 0.40);
-        ctx.restore();
+        g.restore();
       };
-
-      pair(T * 1.3, WOOL.deep, 0, T * 0.30);    // тень в просвете
-      pair(T * 1.08, WOOL.under, 0, T * 0.12);  // изнанка пряди
-      pair(T, WOOL.body, 0, 0);                 // тело
+      pair(T * 1.3, WOOL.deep, 0, T * 0.30);            // тень в просвете
+      pair(T * 1.08, WOOL.under, 0, T * 0.12);          // изнанка пряди
+      pair(T, WOOL.body, 0, 0);                         // тело
       pair(T * 0.30, WOOL.light, -T * 0.16, -T * 0.20); // блик по верху
+      yarn = yc;
+
+      spriteBox = { w: bw, h: bh, ox: padX, oy: padTop };
     }
 
     function draw() {
       ctx.clearRect(0, 0, w, h);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-
-      // Подложка: сплошное тёмное полотно, чтобы фон не просвечивал.
-      ctx.fillStyle = WOOL.deep;
-      for (const p of pts) {
-        if (p.a <= 0.05) continue;
-        ctx.globalAlpha = Math.min(1, p.a);
-        ctx.beginPath();
-        ctx.ellipse(p.x, p.y, cellW * 0.66, cellH * 0.8, 0, 0, 6.3);
-        ctx.fill();
-      }
-      for (const p of pts) {
-        if (p.a <= 0.05) continue;
-        ctx.globalAlpha = Math.min(1, p.a);
-        stitch(p);
-      }
+      // Сначала вся подложка, потом вся пряжа. Одним проходом нельзя:
+      // тёмная подложка соседней петли закрашивала уже нарисованную нить,
+      // и полотно выходило дырявым.
+      const blit = (img) => {
+        for (const p of pts) {
+          if (p.a <= 0.05) continue;
+          ctx.globalAlpha = p.a < 1 ? p.a : 1;
+          ctx.drawImage(img, p.x - spriteBox.ox * p.k, p.y - spriteBox.oy * p.k,
+                        spriteBox.w * p.k, spriteBox.h * p.k);
+        }
+      };
+      blit(back);
+      // Ряды идут сверху вниз, поэтому нижний перекрывает хвосты верхнего —
+      // порядок точек уже такой, сортировать нечего.
+      blit(yarn);
       ctx.globalAlpha = 1;
 
       // Срезаем всё, что вылезло за букву: петли торчали хвостами и слово
@@ -242,76 +266,61 @@
     }
 
     /**
-     * Во время покоя не считаем и не перерисовываем вообще ничего: холст
-     * стоит кадр в кадр, поэтому мерцать физически нечему. Движение есть
-     * только на перетекании, дальше точки встают ровно по пикселям.
+     * Полотно дышит и в покое: петли ходят на пиксель с небольшим сдвигом
+     * фазы по соседям, поэтому волна идёт по ткани, а не дёргает каждую
+     * петлю сама по себе. Силуэт буквы при этом задаёт неподвижная маска,
+     * так что край остаётся ровным и мерцать нечему.
      */
-    function snap() {
-      const q = 1 / dpr;                       // прижимаем к пикселям устройства
-      for (const p of pts) {
-        p.x = Math.round(p.tx / q) * q;
-        p.y = Math.round(p.ty / q) * q;
-        p.a = p.ta;
-      }
-    }
-
-    function frame(now) {
-      if (!t0) t0 = now;
-      const k = ease(Math.min(1, (now - t0) / MORPH));
-      clipK = Math.max(0, (k - 0.55) / 0.45);
-      for (const p of pts) {
-        const arc = Math.sin(k * Math.PI) * p.sw * 60;
-        p.x = p.fx + (p.tx - p.fx) * k + arc;
-        p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4;
-        p.a = p.fa + (p.ta - p.fa) * k;
-      }
-      draw();
-      if (k >= 1) { phase = 'hold'; clipK = 1; snap(); draw(); hold(); return; }
-      raf = requestAnimationFrame(frame);
+    function sway(p, now, out) {
+      const t = now * 0.0011;
+      out.x = Math.sin(t + p.tx * 0.011) * 1.1;
+      out.y = Math.cos(t * 0.83 + p.ty * 0.019 + p.tx * 0.005) * 1.25;
     }
 
     /**
-     * Полотно под курсором расходится и возвращается на место. Кадры здесь
-     * идут только пока мышь рядом или петли ещё не улеглись: как только всё
-     * встало — замираем, и в покое снова ни одного лишнего кадра.
+     * Кадры идут непрерывно: и пока слово перетекает, и пока стоит. Раньше
+     * в покое не рисовался ни один кадр — слово вставало намертво, а потом
+     * резко срывалось с места, и это читалось как смена слайдов.
      */
-    function settle() {
-      let moving = false;
-      const R2 = 11000;
-      for (const p of pts) {
-        let gx = p.tx; let gy = p.ty;
-        const dx = p.tx - pointer.x; const dy = p.ty - pointer.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < R2 && d2 > 0.01) {
-          const f = (1 - d2 / R2) * 26 / Math.sqrt(d2);
-          gx += dx * f; gy += dy * f;
+    const off = { x: 0, y: 0 };
+    function tick(now) {
+      raf = requestAnimationFrame(tick);
+      if (!running) return;
+      if (!t0) t0 = now;
+
+      if (phase === 'morph') {
+        const k = ease(Math.min(1, (now - t0) / MORPH));
+        clipK = Math.max(0, (k - 0.5) / 0.5);
+        for (const p of pts) {
+          sway(p, now, off);
+          const arc = Math.sin(k * Math.PI) * p.sw * 60;
+          p.x = p.fx + (p.tx - p.fx) * k + arc + off.x;
+          p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4 + off.y;
+          p.a = p.fa + (p.ta - p.fa) * k;
         }
-        p.x += (gx - p.x) * 0.16;
-        p.y += (gy - p.y) * 0.16;
-        if (Math.abs(gx - p.x) > 0.25 || Math.abs(gy - p.y) > 0.25) moving = true;
-      }
-      draw();
-      if (!moving && pointer.x < -500) { snap(); draw(); touching = false; return; }
-      rafTouch = requestAnimationFrame(settle);
-    }
-
-    function wake() {
-      if (touching || phase !== 'hold' || reduced || !visible) return;
-      touching = true;
-      rafTouch = requestAnimationFrame(settle);
-    }
-
-    /** Ждём и запускаем следующее слово. */
-    function hold() {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        cancelAnimationFrame(rafTouch); touching = false;
+        if (k >= 1) { phase = 'hold'; clipK = 1; t0 = now; }
+      } else if (now - t0 >= HOLD) {
         step = (step + 1) % words.length;
         aim(step);
         setCaption(step);
-        phase = 'morph'; t0 = 0;
-        raf = requestAnimationFrame(frame);
-      }, HOLD);
+        phase = 'morph'; t0 = now;
+      } else {
+        const R2 = 11000;
+        for (const p of pts) {
+          sway(p, now, off);
+          let gx = p.tx + off.x; let gy = p.ty + off.y;
+          const dx = p.tx - pointer.x; const dy = p.ty - pointer.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < R2 && d2 > 0.01) {        // полотно расходится под курсором
+            const f = (1 - d2 / R2) * 26 / Math.sqrt(d2);
+            gx += dx * f; gy += dy * f;
+          }
+          p.x += (gx - p.x) * 0.18;
+          p.y += (gy - p.y) * 0.18;
+          p.a = p.ta;
+        }
+      }
+      draw();
     }
 
     function setCaption(i) {
@@ -325,8 +334,8 @@
       const next = on && !reduced && !document.hidden;
       if (next === running) return;
       running = next;
-      if (running) { if (phase === 'morph') { t0 = 0; raf = requestAnimationFrame(frame); } else hold(); }
-      else { cancelAnimationFrame(raf); cancelAnimationFrame(rafTouch); touching = false; clearTimeout(timer); }
+      if (running) { t0 = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); }
+      else cancelAnimationFrame(raf);
     }
 
     build();
@@ -337,14 +346,13 @@
     let resizeTimer = 0;
     addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; clipK = 1; aim(0, true); setCaption(0); draw(); if (running) hold(); }, 200);
+      resizeTimer = setTimeout(() => { build(); step = 0; phase = 'hold'; clipK = 1; t0 = 0; aim(0, true); setCaption(0); draw(); }, 200);
     }, { passive: true });
     document.addEventListener('visibilitychange', () => play(visible));
     const band = host.parentElement;
     band.addEventListener('pointermove', (e) => {
       const box = host.getBoundingClientRect();
       pointer = { x: e.clientX - box.left, y: e.clientY - box.top };
-      wake();
     }, { passive: true });
     band.addEventListener('pointerleave', () => { pointer = { x: -9999, y: -9999 }; });
     new IntersectionObserver((rows) => { visible = rows[0].isIntersecting; play(visible); }, { threshold: 0 }).observe(host);
