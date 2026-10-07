@@ -26,8 +26,8 @@
     light: '#f4f1fe',     // блик по верху
   };
 
-  const HOLD = 1500;        // сколько держим слово
-  const MORPH = 1900;       // сколько перетекаем: дольше — значит плавнее
+  const HOLD = 1100;        // сколько держим слово: дольше — и кажется, что зависло
+  const MORPH = 1700;       // сколько перетекаем
   const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
   function start(host) {
@@ -48,8 +48,9 @@
     let pts = [];             // точки самого слова
     let area = { y: 0, h: 0 };// куда ставим слово
     let cellW = 12; let cellH = 14;   // размер петли: ширина столбика и высота ряда
-    let step = 0; let t0 = 0; let phase = 'hold';
+    let step = 0; let prevStep = 0; let t0 = 0; let phase = 'hold';
     let clipK = 1;            // насколько проявлен силуэт буквы: 0 — пряжа свободна
+    let clipMask = null;      // каким силуэтом режем сейчас: уходящим или приходящим
     let veil = null;          // холст для частичной обрезки
     let back = null;          // тёмная подложка петли
     let yarn = null;          // сама пряжа: четыре слоя прядей
@@ -144,12 +145,19 @@
       aim(0, true);
     }
 
-    /** Раздаём цели. Лишние уходят вниз и гаснут — это и есть воронка. */
-    function aim(i, instant) {
+    /**
+     * Раздаём цели. Лишние уходят вниз и гаснут — это и есть воронка.
+     *
+     * Старт берём без волны: на кадре к положению точки прибавляется
+     * дыхание полотна, и если запомнить уже сдвинутую точку, то на первом
+     * же кадре перетекания волна прибавится второй раз и слово дёрнется.
+     */
+    function aim(i, instant, now = performance.now()) {
       const shape = shapes[i];
       const slots = shape.length / 2;
       pts.forEach((p, k) => {
-        p.fx = p.x; p.fy = p.y; p.fa = p.a;
+        sway(p, now, off);
+        p.fx = p.x - off.x; p.fy = p.y - off.y; p.fa = p.a;
         if (k < slots) {
           p.tx = shape[k * 2]; p.ty = shape[k * 2 + 1]; p.ta = 1;
         } else {
@@ -240,7 +248,7 @@
       // читалось как пятно. В начале перетекания обрезки нет, иначе пряжа
       // не смогла бы разлететься, а к концу силуэт проявляем постепенно —
       // при резком включении край буквы щёлкал с лохматого на ровный.
-      const mask = masks[step];
+      const mask = clipMask || masks[step];
       if (mask && clipK > 0.002) {
         ctx.globalCompositeOperation = 'destination-in';
         ctx.drawImage(clipK >= 0.998 ? mask : partial(mask), 0, 0, w, h);
@@ -271,10 +279,11 @@
      * петлю сама по себе. Силуэт буквы при этом задаёт неподвижная маска,
      * так что край остаётся ровным и мерцать нечему.
      */
+    const off = { x: 0, y: 0 };   // куда волна сдвигает петлю на этом кадре
     function sway(p, now, out) {
       const t = now * 0.0011;
-      out.x = Math.sin(t + p.tx * 0.011) * 1.1;
-      out.y = Math.cos(t * 0.83 + p.ty * 0.019 + p.tx * 0.005) * 1.25;
+      out.x = Math.sin(t + p.tx * 0.011) * 1.8;
+      out.y = Math.cos(t * 0.83 + p.ty * 0.019 + p.tx * 0.005) * 2.0;
     }
 
     /**
@@ -282,7 +291,6 @@
      * в покое не рисовался ни один кадр — слово вставало намертво, а потом
      * резко срывалось с места, и это читалось как смена слайдов.
      */
-    const off = { x: 0, y: 0 };
     function tick(now) {
       raf = requestAnimationFrame(tick);
       if (!running) return;
@@ -290,7 +298,11 @@
 
       if (phase === 'morph') {
         const k = ease(Math.min(1, (now - t0) / MORPH));
-        clipK = Math.max(0, (k - 0.5) / 0.5);
+        // Силуэт отпускаем и подхватываем плавно, с разных масок. Раньше
+        // в начале перетекания обрезка выключалась разом: срезанные хвосты
+        // пряжи возникали из ниоткуда одним кадром — это и была склейка.
+        if (k < 0.45) { clipMask = masks[prevStep]; clipK = Math.max(0, 1 - k / 0.32); }
+        else { clipMask = masks[step]; clipK = Math.max(0, (k - 0.62) / 0.38); }
         for (const p of pts) {
           sway(p, now, off);
           const arc = Math.sin(k * Math.PI) * p.sw * 60;
@@ -298,10 +310,11 @@
           p.y = p.fy + (p.ty - p.fy) * k - arc * 0.4 + off.y;
           p.a = p.fa + (p.ta - p.fa) * k;
         }
-        if (k >= 1) { phase = 'hold'; clipK = 1; t0 = now; }
+        if (k >= 1) { phase = 'hold'; clipMask = masks[step]; clipK = 1; t0 = now; }
       } else if (now - t0 >= HOLD) {
+        prevStep = step;
         step = (step + 1) % words.length;
-        aim(step);
+        aim(step, false, now);
         setCaption(step);
         phase = 'morph'; t0 = now;
       } else {
