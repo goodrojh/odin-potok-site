@@ -18,7 +18,7 @@ const CONTACTS = {
   // Приёмник заявок: таблица и письма. Это адрес веб-приложения Google
   // Apps Script, см. tools/ЗАЯВКИ.md. Пусто — заявка просто открывает
   // мессенджер, как раньше, и ничего не теряется.
-  leadHook: '',
+  leadHook: 'https://script.google.com/macros/s/AKfycbwZK4TRsb6TYG9OHiNeGRgyIQHD-E3yZ2eNsKtZ-vIm7hhEq8XsGOOmzYEnEY_lmRmY/exec',
 };
 
 /**
@@ -186,6 +186,28 @@ const DESIGN_WORKS = [
   { n: 'Презентации и КП', d: 'Коммерческое предложение, которое не стыдно отправить. Структура, цифры, верстка — читается за пять минут.' },
   { n: 'Упаковка соцсетей', d: 'Обложки, аватарки, шаблоны постов и историй. Чтобы вести самим и не рассыпаться.' },
   { n: 'Полиграфия и вывески', d: 'Визитки, буклеты, ценники, наружная реклама. Готовим в печать с нужными вылетами и цветами.' },
+];
+
+/**
+ * Работы дизайнера. Это настоящее портфолио, а не стоковые картинки:
+ * показываем лист целиком, как он собран, вместе с задачей — по одной
+ * красивой картинке нельзя понять, решала она что-нибудь или нет.
+ */
+const DESIGN_SHOTS = [
+  { f: 'brandbook.webp', n: 'Мир ламп', t: 'Брендбук',
+    d: 'Фирменный стиль магазина светоэлектроники: знак, охранное поле, цвета в RGB и CMYK, носители от визитки до бейджа и вывески.' },
+  { f: 'soap.webp', n: 'DURU', t: 'Упаковка',
+    d: 'Полный ребрендинг с переориентировкой на новую аудиторию — чтобы поднять цену продукта, а не просто перекрасить коробку.' },
+  { f: 'posters.webp', n: 'Coachella', t: 'Постеры',
+    d: 'Переосмысление афиш фестиваля под тематику текущего года с сохранением узнаваемой стилистики. Крупные шрифты и акцентные цвета — под разные форматы размещения.' },
+  { f: 'arcanum.webp', n: 'ARCANUM', t: 'Презентация',
+    d: 'Новая айдентика центра развития личности: нужно было передать антураж бренда, а не просто разложить текст по слайдам.' },
+  { f: 'models.webp', n: 'TOP SECRET', t: 'Презентация',
+    d: 'Современное прочтение старого дизайна модельного агентства — чтобы презентация привлекала в школу новые лица.' },
+  { f: 'printed.webp', n: 'Студия красоты', t: 'Полиграфия',
+    d: 'Фирменный стиль в печати: прайс, меню, подарочный сертификат, карта клиента. Один язык на всех носителях.' },
+  { f: 'cards.webp', n: 'MATCH Tennis club', t: 'Визитки',
+    d: 'Задача — сохранить лаконичность фирменного стиля, но заставить визитку задержаться в руках.' },
 ];
 
 /** Цены на дизайн. Правятся здесь. */
@@ -425,6 +447,63 @@ function buildWorks() {
   show(0, false);
 }
 
+/**
+ * Галерея работ дизайнера. Лист открывается во весь экран по нажатию:
+ * в сетке читается общий уровень, а разбирать мелочи приходится крупно.
+ */
+function buildDesignShots() {
+  const box = document.getElementById('design-shots');
+  if (!box) return;
+  box.innerHTML = DESIGN_SHOTS.map((w, i) => `<figure class="dsh rise" data-i="${i}">
+    <button class="dsh__btn" type="button" aria-label="Открыть работу «${esc(w.n)}» крупно">
+      <img src="assets/design/${esc(w.f)}" alt="${esc(w.t)}: ${esc(w.n)}" loading="lazy" decoding="async" />
+      <span class="dsh__zoom" aria-hidden="true">Крупно</span>
+    </button>
+    <figcaption>
+      <span class="dsh__t">${esc(w.t)}</span>
+      <b>${esc(w.n)}</b>
+      <span class="dsh__d">${esc(w.d)}</span>
+    </figcaption>
+  </figure>`).join('');
+
+  const lb = document.createElement('div');
+  lb.className = 'lbox';
+  lb.hidden = true;
+  lb.innerHTML = `<button class="lbox__x" type="button" aria-label="Закрыть">×</button>
+    <button class="lbox__nav lbox__nav--prev" type="button" aria-label="Предыдущая">‹</button>
+    <img class="lbox__img" alt="" />
+    <button class="lbox__nav lbox__nav--next" type="button" aria-label="Следующая">›</button>
+    <p class="lbox__cap"></p>`;
+  document.body.appendChild(lb);
+  const img = lb.querySelector('.lbox__img');
+  const cap = lb.querySelector('.lbox__cap');
+  let at = 0;
+
+  function open(i) {
+    at = (i + DESIGN_SHOTS.length) % DESIGN_SHOTS.length;
+    const w = DESIGN_SHOTS[at];
+    img.src = `assets/design/${w.f}`;
+    img.alt = `${w.t}: ${w.n}`;
+    cap.textContent = `${w.n} — ${w.t.toLowerCase()}`;
+    lb.hidden = false;
+    document.body.classList.add('is-locked');
+  }
+  function close() { lb.hidden = true; document.body.classList.remove('is-locked'); img.src = ''; }
+
+  box.querySelectorAll('.dsh__btn').forEach((b, i) => b.addEventListener('click', () => open(i)));
+  lb.querySelector('.lbox__x').addEventListener('click', close);
+  lb.querySelector('.lbox__nav--prev').addEventListener('click', () => open(at - 1));
+  lb.querySelector('.lbox__nav--next').addEventListener('click', () => open(at + 1));
+  lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+  // Клавиши: без них полноэкранный просмотр неудобен на компьютере.
+  addEventListener('keydown', (e) => {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') open(at - 1);
+    if (e.key === 'ArrowRight') open(at + 1);
+  });
+}
+
 function platformCard(p) {
   const ic = p.logo
     ? `<span class="plat__ic plat__ic--img"><img src="assets/logos/${p.logo}" alt="" loading="lazy" /></span>`
@@ -600,6 +679,7 @@ buildList('#channels', CHANNELS, (c) => `<div class="chan rise">
   <div class="chan__p">${c.p ? `${money(c.p)}<i>${c.once ? 'один раз' : 'в месяц'}</i>` : 'считаем<i>под задачу</i>'}</div>
 </div>`);
 buildWorks();
+buildDesignShots();
 applyContacts();
 buildReach();
 watchRise();
