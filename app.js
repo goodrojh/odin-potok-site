@@ -134,39 +134,75 @@ const WEB_PRICES = [
  * Картинку кладите в site/assets/works/. Без img покажем аккуратную заглушку.
  */
 /**
- * Сделанные сайты. Их показываем не картинкой, а живым окном: внутри
- * можно ходить по страницам и нажимать кнопки.
+ * Сделанные сайты.
  *
- * Окно запускается без разрешения на формы, поэтому отправить заявку
- * изнутри невозможно — чужие CRM от любопытных посетителей не страдают.
- * Там же нет доступа к своему домену, так что и отправка «в обход»
- * формы не пройдёт.
+ * Обложка — один кадр с экраном компьютера и телефоном: так сразу видно,
+ * что сайт сделан под оба устройства. Собирается из настоящих снимков
+ * командой `node tools/work-covers.mjs`, рисовать руками ничего не надо.
  *
- * peek — работа показывается снимком, а не живым окном. Так помечаем
- * рабочие системы клиентов: пускать туда посетителей нельзя.
+ * По нажатию открывается живое окно: внутри можно ходить и нажимать, но
+ * форма не отправится — окно запущено без разрешения на формы и без
+ * доступа к своему домену, поэтому чужие CRM не наполняются мусором.
+ *
+ * Адреса в тексте не показываем: это работы клиентов, а не каталог ссылок.
  */
 const WORKS = [
   {
-    n: 'ADALIGHT',
-    d: 'Проектирование и поставка освещения для ЖК, офисов и ритейла',
-    tags: ['Каталог 2500+ моделей', 'Подбор аналогов', 'Расчёт под объект'],
-    url: 'https://goodrojh.github.io/adalight/',
+    n: 'ВЭД-эксперт', t: 'Импорт и экспорт под ключ', c: 'ved.webp',
+    d: 'Сопровождение сделки от контракта до склада. Внутри — калькулятор таможенных платежей: человек сам считает пошлину и НДС и видит, во что обходится ошибка в коде ТН ВЭД.',
+    tags: ['Калькулятор платежей', 'Путь груза по шагам', 'Документы и допуски'],
+    url: 'https://goodrojh.github.io/ved-landing/',
   },
   {
-    n: 'ГК «Сфера»',
-    d: 'Устройство промышленных полимерных полов',
-    tags: ['Калькулятор сметы', 'Отраслевые страницы', 'Заявка с площадью'],
+    n: 'ВЕГА Казань', t: 'Срочный ремонт ворот и рольставней', c: 'vega.webp',
+    d: 'Прайс открыт сразу после первого экрана, а диагностика подсказывает поломку до приезда техника. Заявка собирает, что именно сломалось, — мастер едет с нужной запчастью.',
+    tags: ['Прайс в открытую', 'Диагностика онлайн', 'Расчёт до звонка'],
+    url: 'https://goodrojh.github.io/vega-kazan/',
+  },
+  {
+    n: 'ЕКБ-Эвакуатор', t: 'Круглосуточная эвакуация', c: 'evakuator.webp',
+    d: 'Услуга, где решают за минуту. Первый экран отвечает на единственный вопрос — когда приедет и сколько стоит, а время подачи подставляется по часам.',
+    tags: ['Цена фиксируется по телефону', 'Время подачи', 'Оплата после'],
+    url: 'https://goodrojh.github.io/ekb-evakuator/',
+  },
+  {
+    n: 'ADALIGHT', t: 'Проектирование и поставка света', c: 'adalight.webp',
+    d: 'Каталог на две с половиной тысячи моделей и подбор проектных аналогов. На первом экране свет можно покрутить прямо на фотографии интерьера — тёплый, нейтральный, холодный.',
+    tags: ['Каталог 2500+ моделей', 'Подбор аналогов', 'Свет меняется на фото'],
+    url: 'https://adalight.ru/',
+  },
+  {
+    n: 'ГК «Сфера»', t: 'Промышленные полимерные полы', c: 'sphere.webp',
+    d: 'Заказчик — производство, где простой дороже ремонта. Поэтому отдельные страницы под пищёвку, склады, фарму и паркинги и смета по площади, а не общий прайс.',
+    tags: ['Отраслевые страницы', 'Смета по площади', 'Объекты и допуски'],
     url: 'https://gksphere.ru/',
   },
   {
-    n: 'ВИДЖИО',
-    d: 'Проектирование и монтаж систем видеонаблюдения',
-    tags: ['Подбор по числу камер', 'Расчёт за три шага', 'Выезд инженера'],
-    url: 'https://goodrojh.github.io/zorkiy-cctv/',
+    n: 'COMFORT36', t: 'Ателье для кабин большегрузов', c: 'comfort36.webp',
+    d: 'Пошив по лекалам: кабину снимают 3D-сканером. Сайт ведёт от модели тягача к расчёту за минуту, а не к прайсу, в котором водитель не найдёт свою машину.',
+    tags: ['Подбор по модели тягача', 'Расчёт за 60 секунд', 'Галерея пошива'],
+    url: 'https://goodrojh.github.io/comfort36-landing/',
+  },
+  {
+    n: 'АлтайГидроБур', t: 'Бурение скважин на воду', c: 'altai.webp',
+    d: 'Услуга с непредсказуемой глубиной: назвать цену заранее нельзя, а не назвать — потерять заявку. Калькулятор считает по метрам и грунту, разговор начинается с реальной суммы.',
+    tags: ['Калькулятор по метрам', 'Техника и бригады', 'Оплата после акта'],
+    url: 'https://goodrojh.github.io/altaigidrobur/',
+  },
+  {
+    n: 'AVEO glass', t: 'Стекло для душевых и интерьеров', c: 'aveo.webp',
+    d: 'Товар, который продаётся глазами: светлая вёрстка, крупные фотографии, фурнитура и покрытия в каталоге. Дорога одна — до замера с чемоданом образцов.',
+    tags: ['Каталог и фурнитура', 'Замер с образцами', 'Расчёт конфигурации'],
+    url: 'https://goodrojh.github.io/aveo-glass/',
+  },
+  {
+    n: 'ДЫШИ', t: 'Студия йоги в Кунцеве', c: 'yoga.webp',
+    d: 'Вместо каталога абонементов — запись на первое занятие. Направления, расписание, инструкторы и дорога от метро: всё, что спрашивают до того, как прийти.',
+    tags: ['Запись в два шага', 'Расписание и направления', 'Как добраться'],
+    url: 'https://goodrojh.github.io/yoga-krylatskoe/',
   },
 ];
 
-/** Этапы работы над сайтом. */
 const WEB_STEPS = [
   { t: 'Разбираемся', d: 'Кто покупает, за что платит, что спрашивает перед покупкой. Смотрим конкурентов и то, что уже есть у вас в аналитике.' },
   { t: 'Прототип', d: 'Схема страниц без картинок: что за чем идёт и почему. Согласуем смысл до того, как рисовать, — так правки дешевле.' },
@@ -371,9 +407,9 @@ function buildHeroForms() {
 }
 
 /**
- * Витрина сделанных сайтов. Слева список работ, справа одно окно —
- * так страница не тянет четыре чужих сайта сразу и не тормозит.
- * Окно включается по нажатию: до этого там заставка.
+ * Витрина сделанных сайтов: сетка обложек, по нажатию — живое окно.
+ * Окно грузится только после нажатия, иначе страница тянула бы девять
+ * чужих сайтов сразу и открывалась бы минуту.
  */
 function buildWorks() {
   const box = document.getElementById('works-grid');
@@ -387,64 +423,70 @@ function buildWorks() {
     </div>`;
     return;
   }
-
-  // Контейнер в вёрстке — сетка карточек в три колонки; витрине она мешает.
   box.classList.remove('works');
-  const tabs = WORKS.map((w, i) => `<button class="wtab${i ? '' : ' is-on'}" type="button" data-w="${i}">
-    <b>${esc(w.n)}</b><span>${esc(w.d)}</span></button>`).join('');
-  box.innerHTML = `<div class="shw">
-    <div class="shw__list">${tabs}</div>
-    <div class="shw__stage">
-      <div class="shw__bar">
-        <span class="shw__dots"><i></i><i></i><i></i></span>
-        <span class="shw__name" data-name></span>
-        <span class="shw__mode">
-          <button class="shw__m is-on" type="button" data-size="wide">Экран</button>
-          <button class="shw__m" type="button" data-size="phone">Телефон</button>
-        </span>
-      </div>
-      <div class="shw__view" data-view></div>
-      <p class="shw__note" data-note></p>
+  box.classList.add('wgrid');
+  box.innerHTML = WORKS.map((w, i) => `<article class="wcard rise">
+    <button class="wcard__pic" type="button" data-w="${i}" aria-label="Открыть демонстрацию сайта «${esc(w.n)}»">
+      <img src="assets/works/${esc(w.c)}" alt="Сайт «${esc(w.n)}» на компьютере и на телефоне" loading="lazy" decoding="async" />
+      <span class="wcard__play">Открыть вживую</span>
+    </button>
+    <div class="wcard__body">
+      <span class="wcard__t">${esc(w.t)}</span>
+      <b class="wcard__n">${esc(w.n)}</b>
+      <p class="wcard__d">${esc(w.d)}</p>
+      <ul class="wcard__tags">${w.tags.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
     </div>
-  </div>`;
+  </article>`).join('');
+  box.querySelectorAll('.wcard__pic').forEach((b) => b.addEventListener('click', () => openDemo(+b.dataset.w)));
+}
 
-  const view = box.querySelector('[data-view]');
-  const name = box.querySelector('[data-name]');
-  const note = box.querySelector('[data-note]');
-  const modes = box.querySelectorAll('[data-size]');
-  let cur = 0;
-
-  function show(i, run) {
-    cur = i;
-    const w = WORKS[i];
-    box.querySelectorAll('.wtab').forEach((b, k) => b.classList.toggle('is-on', k === i));
-    name.textContent = w.n;
-    if (w.peek) {
-      view.innerHTML = `<img class="shw__shot" src="assets/${esc(w.img)}" alt="${esc(w.n)}" loading="lazy" />`;
-      note.textContent = w.peek;
-      return;
-    }
-    note.innerHTML = 'Это живой сайт — ходите по страницам и нажимайте что угодно. '
-      + '<b>Отправить заявку отсюда нельзя:</b> формы в окне отключены, чтобы клиенту не падали пустые обращения.';
-    if (!run) {
-      view.innerHTML = `<button class="shw__play" type="button">
-        <span class="shw__playi" aria-hidden="true">▸</span>Открыть ${esc(w.n)}</button>`;
-      view.querySelector('.shw__play').addEventListener('click', () => show(i, true));
-      return;
-    }
-    // sandbox без allow-forms и без allow-same-origin: скрипты работают,
-    // а отправить что-либо наружу окно не может.
-    view.innerHTML = `<iframe class="shw__frame" src="${esc(w.url)}" loading="lazy"
-      sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
-      title="Демонстрация сайта ${esc(w.n)}"></iframe>`;
+/** Живое окно с сайтом поверх страницы. */
+function openDemo(i) {
+  const w = WORKS[i];
+  let box = document.querySelector('.demo');
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'demo';
+    box.hidden = true;
+    box.innerHTML = `<div class="demo__card">
+      <div class="demo__bar">
+        <span class="demo__dots"><i></i><i></i><i></i></span>
+        <span class="demo__name" data-name></span>
+        <span class="demo__mode">
+          <button class="demo__m is-on" type="button" data-size="wide">Экран</button>
+          <button class="demo__m" type="button" data-size="phone">Телефон</button>
+        </span>
+        <button class="demo__x" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <div class="demo__view" data-view></div>
+      <p class="demo__note">Это живой сайт — ходите по страницам и нажимайте что угодно.
+        <b>Отправить заявку отсюда нельзя:</b> формы в окне отключены, чтобы клиенту не падали пустые обращения.</p>
+    </div>`;
+    document.body.appendChild(box);
+    box.querySelector('.demo__x').addEventListener('click', closeDemo);
+    box.addEventListener('click', (e) => { if (e.target === box) closeDemo(); });
+    addEventListener('keydown', (e) => { if (e.key === 'Escape' && !box.hidden) closeDemo(); });
+    box.querySelectorAll('[data-size]').forEach((b) => b.addEventListener('click', () => {
+      box.querySelectorAll('[data-size]').forEach((x) => x.classList.toggle('is-on', x === b));
+      box.querySelector('[data-view]').classList.toggle('demo__view--phone', b.dataset.size === 'phone');
+    }));
   }
+  box.querySelector('[data-name]').textContent = `${w.n} — ${w.t.toLowerCase()}`;
+  // sandbox без allow-forms и без allow-same-origin: скрипты работают,
+  // а отправить что-либо наружу окно не может.
+  box.querySelector('[data-view]').innerHTML = `<iframe class="demo__frame" src="${esc(w.url)}"
+    sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+    title="Демонстрация сайта ${esc(w.n)}"></iframe>`;
+  box.hidden = false;
+  document.body.classList.add('is-locked');
+}
 
-  box.querySelectorAll('.wtab').forEach((b) => b.addEventListener('click', () => show(+b.dataset.w, false)));
-  modes.forEach((b) => b.addEventListener('click', () => {
-    modes.forEach((x) => x.classList.toggle('is-on', x === b));
-    view.classList.toggle('shw__view--phone', b.dataset.size === 'phone');
-  }));
-  show(0, false);
+function closeDemo() {
+  const box = document.querySelector('.demo');
+  if (!box) return;
+  box.hidden = true;
+  box.querySelector('[data-view]').innerHTML = '';   // снимаем нагрузку с вкладки
+  document.body.classList.remove('is-locked');
 }
 
 /**
