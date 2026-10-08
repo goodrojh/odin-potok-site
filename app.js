@@ -46,7 +46,7 @@ function pageDirection() {
 const MESSENGERS = [
   { id: 'tg', n: 'Telegram', logo: 'telegram.png' },
   { id: 'max', n: 'MAX', logo: 'max.png' },
-  { id: 'wa', n: 'WhatsApp', logo: 'whatsapp.webp' },
+  { id: 'wa', n: 'WhatsApp', logo: 'whatsapp.svg' },
 ];
 
 /** Карточки площадок в бегущей строке. logo — файл в assets/logos, иначе рисуем букву. */
@@ -592,8 +592,16 @@ function sendLead(lead) {
 }
 
 function watchForms() {
-  document.querySelectorAll('form[data-lead]').forEach((form) => {
-    form.addEventListener('submit', (e) => {
+  document.querySelectorAll('form[data-lead]').forEach(bindForm);
+}
+
+/** Форма может появиться и позже — например, в окне поверх страницы. */
+function bindForm(form) {
+  if (form.dataset.bound) return;
+  form.dataset.bound = '1';
+  {
+    {
+      form.addEventListener('submit', (e) => {
       e.preventDefault();
       const d = new FormData(form);
       for (const k of ['name', 'contact']) {
@@ -628,8 +636,9 @@ function watchForms() {
           try { navigator.clipboard?.writeText(leadText(lead)); } catch { /* не критично */ }
           done('Открылся мессенджер с вашей заявкой — отправьте сообщение. Если он не открылся, контакты в подвале.', true);
         });
-    });
-  });
+      });
+    }
+  }
 }
 
 /**
@@ -651,6 +660,77 @@ function buildReach() {
         <path d="M6.5 3h3l1.5 4-2 1.4a12 12 0 0 0 5.6 5.6L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 3 6.2 2 2 0 0 1 5 4z"/>
       </svg><span class="reach__cap">Позвонить</span></a>${links}`;
   document.body.appendChild(box);
+}
+
+/**
+ * Форма поверх страницы. Раньше кнопки вроде «Обсудить задачу» вели
+ * якорем в самый верх: человек дочитывал блок, нажимал — и его бросало
+ * обратно к началу, а зачем он нажал, никто уже не знал. Теперь форма
+ * открывается на месте и помнит, из какого блока её позвали, —
+ * в таблице это видно отдельной строкой.
+ */
+function openLead(topic, title) {
+  let box = document.querySelector('.lead-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'lead-box';
+    box.hidden = true;
+    box.innerHTML = `<div class="lead-box__card" role="dialog" aria-modal="true" aria-label="Оставить заявку">
+      <button class="lead-box__x" type="button" aria-label="Закрыть">×</button>
+      <div data-lead-slot></div>
+    </div>`;
+    document.body.appendChild(box);
+    box.querySelector('.lead-box__x').addEventListener('click', () => closeLead());
+    box.addEventListener('click', (e) => { if (e.target === box) closeLead(); });
+    addEventListener('keydown', (e) => { if (e.key === 'Escape' && !box.hidden) closeLead(); });
+  }
+  const slot = box.querySelector('[data-lead-slot]');
+  const holder = document.createElement('div');
+  holder.dataset.heroForm = topic;
+  holder.dataset.title = title || 'Обсудим задачу?';
+  holder.dataset.sub = 'Ответим в течение рабочего дня и скажем, с чего начинать.';
+  slot.innerHTML = '';
+  slot.appendChild(holder);
+  holder.outerHTML = heroForm(holder);
+  const form = slot.querySelector('form');
+  form.classList.remove('rise');
+  bindForm(form);
+  box.hidden = false;
+  document.body.classList.add('is-locked');
+  form.elements.name.focus({ preventScroll: true });
+}
+
+function closeLead() {
+  const box = document.querySelector('.lead-box');
+  if (!box) return;
+  box.hidden = true;
+  document.body.classList.remove('is-locked');
+}
+
+/**
+ * Кнопки «обсудить» разбираем по разметке, а не правим в пятнадцати
+ * файлах: тема берётся из заголовка блока, в котором стоит кнопка.
+ */
+function wireLeadButtons() {
+  const links = document.querySelectorAll('a[href="#start"], a[href$=".html#start"], a[href="#go"], a[href$=".html#go"]');
+  const heads = [...document.querySelectorAll('h1, h2')];
+  links.forEach((a) => {
+    if (a.closest('form') || a.closest('.hero')) return;   // в самой форме кнопка не нужна
+    // Берём ближайший заголовок выше по странице: у некоторых блоков
+    // заголовок лежит вне section, и поиск внутри него ничего не давал.
+    // Кнопка в шапке стоит раньше всех заголовков — ей берём заголовок страницы.
+    const head = heads.filter((h) => h.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_FOLLOWING).pop()
+      || document.querySelector('h1');
+    // innerText, а не textContent: в заголовках есть переносы строк,
+    // и без них слова слипались — «заявки,а не лежит».
+    const raw = head ? head.innerText : a.textContent;
+    const topic = String(raw).replace(/\s+/g, ' ').trim().slice(0, 90);
+    a.setAttribute('role', 'button');
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLead(topic, a.textContent.trim());
+    });
+  });
 }
 
 /* Подставляем адрес кабинета и число дней пробного периода в разметку. */
@@ -680,8 +760,22 @@ buildList('#channels', CHANNELS, (c) => `<div class="chan rise">
 </div>`);
 buildWorks();
 buildDesignShots();
+buildPlans();
+// Эти вызовы однажды потерялись при правке файла, и блоки «Что делаем»,
+// «Как идёт работа» и прайс-листы молча остались пустыми. Проверять
+// пустые блоки теперь умеет tools/empty-blocks.mjs.
+const priceRow = (x) => `<div class="price-row"><span><span class="price-row__n">${esc(x.n)}</span><br />
+  <span class="price-row__d">${esc(x.d)}</span></span><span class="price-row__p">${esc(x.p)}</span></div>`;
+const workCard = (x) => `<div class="card rise"><h3>${esc(x.n)}</h3><p class="mt-s">${esc(x.d)}</p></div>`;
+buildList('#web-works', WEB_WORKS, workCard);
+buildList('#web-prices', WEB_PRICES, priceRow);
+buildList('#web-steps', WEB_STEPS, (x) => `<div class="step rise"><b>${esc(x.t)}</b><span>${esc(x.d)}</span></div>`);
+buildList('#design-works', DESIGN_WORKS, workCard);
+buildList('#design-prices', DESIGN_PRICES, priceRow);
+buildList('#sales-prices', SALES_PRICES, priceRow);
 applyContacts();
 buildReach();
 watchRise();
 watchHead();
 watchForms();
+wireLeadButtons();

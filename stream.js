@@ -114,17 +114,40 @@
       // Шаг выборки подбираем так, чтобы самое большое слово уложилось в бюджет точек.
       // Кегль считаем по самому длинному слову, а дальше только уменьшаем:
       // так видно, что поток физически усыхает, а не просто меняет надпись.
-      const longest = Math.max(...words.map((t) => t.length));
-      const base = Math.min(area.h * 0.92, (w * 0.95) / Math.max(3.2, longest * 0.55));
+      // Кегль подбираем по настоящей ширине слова, а не по числу букв:
+      // прикидка «0.55 на букву» занижала ширину заглавной кириллицы, и
+      // на узких экранах крайние буквы уезжали за край холста.
+      const probe = document.createElement('canvas').getContext('2d');
+      const widthAt = (text, px) => {
+        probe.font = `800 ${Math.max(1, px)}px -apple-system, "Segoe UI", Roboto, Arial, sans-serif`;
+        return probe.measureText(text).width;
+      };
+      const room = w * 0.92;                     // поля по краям обязательны
+
+      let base = area.h * 0.92;
       let gap = Math.max(8, Math.round(base / 19));
-      for (let i = 0; i < 5; i++) {
-        masks = [];
+      let size = () => 1;
+      for (let i = 0; i < 8; i++) {
+        gap = Math.max(8, Math.round(base / 19));
         // Ниже этого кегля крупная вязка перестаёт складываться в букву:
         // на «₽» оставалось шесть рядов петель и читался комок пряжи.
         // Короткому слову поднимаем кегль отдельно: усыхание и так видно по
         // числу букв, а последний знак — это итог, его надо разглядеть.
         const floor = (gap * 0.78 * MIN_ROWS) / (base * 0.7);
-        const size = (t, k) => Math.max(SCALE[k] ?? 0.3, floor, t.length <= 2 ? 0.72 : 0);
+        size = (t, k) => Math.max(SCALE[k] ?? 0.3, floor, t.length <= 2 ? 0.72 : 0);
+        // Меряем каждое слово тем кеглем, которым его и нарисуем: кегль
+        // поднимают и нижняя граница, и правило для коротких слов.
+        const over = Math.max(...words.map((t, k) => widthAt(t, base * size(t, k)) / room));
+        if (over <= 1) break;
+        base = base / over;
+      }
+
+      // Самое широкое слово в пикселях — по нему проверяется, влезает ли
+      // надпись в полосу: tools/band-fit.mjs читает это число.
+      host.dataset.span = String(Math.round(Math.max(...words.map((t, k) => widthAt(t, base * size(t, k))))));
+
+      for (let i = 0; i < 5; i++) {
+        masks = [];
         shapes = words.map((t, k) => sample(t, size(t, k), gap, base));
         const most = Math.max(...shapes.map((sh) => sh.length / 2));
         if (most <= 2600) break;

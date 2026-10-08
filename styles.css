@@ -1347,3 +1347,22 @@ body.is-locked { overflow: hidden; }
   .lbox__nav--next { grid-column: 1; grid-row: 3; justify-self: end; }
   .lbox__cap { grid-column: 1; }
 }
+
+/* ---------- форма поверх страницы ---------- */
+.lead-box {
+  position: fixed; inset: 0; z-index: 210; background: rgba(12, 9, 24, .62);
+  display: grid; place-items: center; padding: 20px; overflow: auto;
+}
+.lead-box[hidden] { display: none; }
+.lead-box__card { position: relative; width: min(520px, 100%); }
+.lead-box__card .hform { margin: 0; }
+.lead-box__x {
+  position: absolute; top: -14px; right: -14px; z-index: 2; cursor: pointer;
+  width: 40px; height: 40px; border-radius: 50%; border: 0; background: #fff; color: var(--ink);
+  font-size: 24px; line-height: 1; display: grid; place-items: center; box-shadow: 0 6px 18px rgba(20, 16, 48, .22);
+}
+.lead-box__x:hover { background: var(--accent); color: #fff; }
+@media (max-width: 560px) {
+  .lead-box { padding: 14px; align-items: start; }
+  .lead-box__x { top: 6px; right: 6px; box-shadow: none; width: 36px; height: 36px; }
+}
