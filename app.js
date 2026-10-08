@@ -10,11 +10,44 @@
 
 const CONTACTS = {
   telegram: 'onepotok',                 // без @; станет ссылкой t.me/onepotok
-  phone: '+7 999 000-00-00',
-  email: 'hello@odin-potok.ru',
+  phone: '+7 999 898-81-43',            // он же для звонков и мессенджеров
+  email: 'odinpotok@inbox.ru',
+  max: 'https://max.ru/u/f9LHodD0cOJPYso_YMMuqxw1O4MYGS52cUIqWkrypXhf0utu4lk6sj53I14',
   cabinet: 'http://localhost:3000',     // адрес кабинета: вход и пробный период
   trialDays: 14,
+  // Приёмник заявок: таблица и письма. Это адрес веб-приложения Google
+  // Apps Script, см. tools/ЗАЯВКИ.md. Пусто — заявка просто открывает
+  // мессенджер, как раньше, и ничего не теряется.
+  leadHook: '',
 };
+
+/**
+ * Какое направление интересует клиента. Считаем по странице: так в
+ * таблице сразу видно, за чем пришли, и не надо спрашивать это формой.
+ * Отдельная форма может сказать иначе — атрибутом data-direction.
+ */
+const DIRECTIONS = {
+  'agency': 'Привлечение заявок',
+  'web': 'Создание сайтов',
+  'design': 'Дизайн',
+  'sales': 'Отдел продаж',
+  'platform': 'Учёт партнёрки',
+};
+function pageDirection() {
+  const file = (location.pathname.split('/').pop() || 'index.html').replace('.html', '');
+  if (file.startsWith('n-')) return DIRECTIONS.agency;   // страницы ниш — та же реклама
+  return DIRECTIONS[file] || 'Общая заявка';
+}
+
+/**
+ * Куда писать. Иконки — оригинальные, скачаны с сайтов самих сервисов:
+ * перерисованный логотип узнаётся хуже и выглядит подделкой.
+ */
+const MESSENGERS = [
+  { id: 'tg', n: 'Telegram', logo: 'telegram.png' },
+  { id: 'max', n: 'MAX', logo: 'max.png' },
+  { id: 'wa', n: 'WhatsApp', logo: 'whatsapp.webp' },
+];
 
 /** Карточки площадок в бегущей строке. logo — файл в assets/logos, иначе рисуем букву. */
 const PLATFORMS = [
@@ -100,7 +133,38 @@ const WEB_PRICES = [
  *   { n: 'Название', d: 'Ниша, что сделали', url: 'https://…', img: 'works/имя.png' }
  * Картинку кладите в site/assets/works/. Без img покажем аккуратную заглушку.
  */
-const WORKS = [];
+/**
+ * Сделанные сайты. Их показываем не картинкой, а живым окном: внутри
+ * можно ходить по страницам и нажимать кнопки.
+ *
+ * Окно запускается без разрешения на формы, поэтому отправить заявку
+ * изнутри невозможно — чужие CRM от любопытных посетителей не страдают.
+ * Там же нет доступа к своему домену, так что и отправка «в обход»
+ * формы не пройдёт.
+ *
+ * peek — работа показывается снимком, а не живым окном. Так помечаем
+ * рабочие системы клиентов: пускать туда посетителей нельзя.
+ */
+const WORKS = [
+  {
+    n: 'ADALIGHT',
+    d: 'Проектирование и поставка освещения для ЖК, офисов и ритейла',
+    tags: ['Каталог 2500+ моделей', 'Подбор аналогов', 'Расчёт под объект'],
+    url: 'https://goodrojh.github.io/adalight/',
+  },
+  {
+    n: 'ГК «Сфера»',
+    d: 'Устройство промышленных полимерных полов',
+    tags: ['Калькулятор сметы', 'Отраслевые страницы', 'Заявка с площадью'],
+    url: 'https://gksphere.ru/',
+  },
+  {
+    n: 'ВИДЖИО',
+    d: 'Проектирование и монтаж систем видеонаблюдения',
+    tags: ['Подбор по числу камер', 'Расчёт за три шага', 'Выезд инженера'],
+    url: 'https://goodrojh.github.io/zorkiy-cctv/',
+  },
+];
 
 /** Этапы работы над сайтом. */
 const WEB_STEPS = [
@@ -168,6 +232,15 @@ const $ = (s, root = document) => root.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const PAGE = document.body.dataset.page || 'home';
 const TG = `https://t.me/${CONTACTS.telegram.replace(/^@/, '')}`;
+const DIGITS = CONTACTS.phone.replace(/[^\d]/g, '');
+const TEL = `tel:+${DIGITS}`;
+/** Адрес мессенджера. Текст заявки подставляем туда, где сервис это умеет. */
+function msgrHref(id, text) {
+  const t = text ? encodeURIComponent(text) : '';
+  if (id === 'tg') return TG + (t ? `?text=${t}` : '');
+  if (id === 'wa') return `https://wa.me/${DIGITS}` + (t ? `?text=${t}` : '');
+  return CONTACTS.max;
+}
 
 function header() {
   const links = [
@@ -229,9 +302,10 @@ function footer() {
       </div>
       <div class="foot__col">
         <b>Связь</b>
-        <a href="${TG}" target="_blank" rel="noopener">@${CONTACTS.telegram.replace(/^@/, '')}</a>
-        <a href="tel:${CONTACTS.phone.replace(/[^\d+]/g, '')}">${CONTACTS.phone}</a>
+        <a href="${TEL}">${CONTACTS.phone}</a>
         <a href="mailto:${CONTACTS.email}">${CONTACTS.email}</a>
+        <div class="foot__msg">${MESSENGERS.map((m) => `<a href="${msgrHref(m.id)}" target="_blank" rel="noopener"
+          title="${esc(m.n)}" aria-label="Написать в ${esc(m.n)}"><img src="assets/logos/${m.logo}" alt="${esc(m.n)}" loading="lazy" /></a>`).join('')}</div>
       </div>
     </div>
     <div class="foot__bottom">
@@ -252,7 +326,8 @@ function heroForm(box) {
   const sub = box.dataset.sub || 'Ответим в течение рабочего дня и скажем, с чего начинать.';
   const pick = (box.dataset.pick || '').split('|').filter(Boolean);
   const i = box.dataset.i || Math.random().toString(36).slice(2, 7);
-  return `<form class="hform rise" data-lead="${esc(topic)}" novalidate>
+  const dir = box.dataset.direction || '';
+  return `<form class="hform rise" data-lead="${esc(topic)}"${dir ? ` data-direction="${esc(dir)}"` : ''} novalidate>
     <h2 class="hform__t">${esc(title)}</h2>
     <p class="hform__s">${esc(sub)}</p>
     <div class="form mt-m">
@@ -273,7 +348,11 @@ function buildHeroForms() {
   document.querySelectorAll('[data-hero-form]').forEach((box) => { box.outerHTML = heroForm(box); });
 }
 
-/** Витрина сделанных сайтов. Пусто — честно говорим об этом, а не прячем раздел. */
+/**
+ * Витрина сделанных сайтов. Слева список работ, справа одно окно —
+ * так страница не тянет четыре чужих сайта сразу и не тормозит.
+ * Окно включается по нажатию: до этого там заставка.
+ */
 function buildWorks() {
   const box = document.getElementById('works-grid');
   if (!box) return;
@@ -286,17 +365,64 @@ function buildWorks() {
     </div>`;
     return;
   }
-  box.innerHTML = WORKS.map((w) => {
-    const pic = w.img
-      ? `<img src="assets/${w.img}" alt="${esc(w.n)}" loading="lazy" />`
-      : `<span class="work__noimg">${esc(w.n.slice(0, 1))}</span>`;
-    const inner = `<span class="work__pic">${pic}</span>
-      <b class="work__n">${esc(w.n)}</b>
-      <span class="work__d">${esc(w.d || '')}</span>`;
-    return w.url
-      ? `<a class="work rise" href="${esc(w.url)}" target="_blank" rel="noopener">${inner}<span class="work__go">Открыть сайт</span></a>`
-      : `<div class="work rise">${inner}</div>`;
-  }).join('');
+
+  // Контейнер в вёрстке — сетка карточек в три колонки; витрине она мешает.
+  box.classList.remove('works');
+  const tabs = WORKS.map((w, i) => `<button class="wtab${i ? '' : ' is-on'}" type="button" data-w="${i}">
+    <b>${esc(w.n)}</b><span>${esc(w.d)}</span></button>`).join('');
+  box.innerHTML = `<div class="shw">
+    <div class="shw__list">${tabs}</div>
+    <div class="shw__stage">
+      <div class="shw__bar">
+        <span class="shw__dots"><i></i><i></i><i></i></span>
+        <span class="shw__name" data-name></span>
+        <span class="shw__mode">
+          <button class="shw__m is-on" type="button" data-size="wide">Экран</button>
+          <button class="shw__m" type="button" data-size="phone">Телефон</button>
+        </span>
+      </div>
+      <div class="shw__view" data-view></div>
+      <p class="shw__note" data-note></p>
+    </div>
+  </div>`;
+
+  const view = box.querySelector('[data-view]');
+  const name = box.querySelector('[data-name]');
+  const note = box.querySelector('[data-note]');
+  const modes = box.querySelectorAll('[data-size]');
+  let cur = 0;
+
+  function show(i, run) {
+    cur = i;
+    const w = WORKS[i];
+    box.querySelectorAll('.wtab').forEach((b, k) => b.classList.toggle('is-on', k === i));
+    name.textContent = w.n;
+    if (w.peek) {
+      view.innerHTML = `<img class="shw__shot" src="assets/${esc(w.img)}" alt="${esc(w.n)}" loading="lazy" />`;
+      note.textContent = w.peek;
+      return;
+    }
+    note.innerHTML = 'Это живой сайт — ходите по страницам и нажимайте что угодно. '
+      + '<b>Отправить заявку отсюда нельзя:</b> формы в окне отключены, чтобы клиенту не падали пустые обращения.';
+    if (!run) {
+      view.innerHTML = `<button class="shw__play" type="button">
+        <span class="shw__playi" aria-hidden="true">▸</span>Открыть ${esc(w.n)}</button>`;
+      view.querySelector('.shw__play').addEventListener('click', () => show(i, true));
+      return;
+    }
+    // sandbox без allow-forms и без allow-same-origin: скрипты работают,
+    // а отправить что-либо наружу окно не может.
+    view.innerHTML = `<iframe class="shw__frame" src="${esc(w.url)}" loading="lazy"
+      sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+      title="Демонстрация сайта ${esc(w.n)}"></iframe>`;
+  }
+
+  box.querySelectorAll('.wtab').forEach((b) => b.addEventListener('click', () => show(+b.dataset.w, false)));
+  modes.forEach((b) => b.addEventListener('click', () => {
+    modes.forEach((x) => x.classList.toggle('is-on', x === b));
+    view.classList.toggle('shw__view--phone', b.dataset.size === 'phone');
+  }));
+  show(0, false);
 }
 
 function platformCard(p) {
@@ -364,7 +490,28 @@ function watchHead() {
   }
 }
 
-/* Заявка: собираем текст и открываем мессенджер — сервер не нужен. */
+/**
+ * Заявка уходит в приёмник: строка в таблице и письмо. Если приёмник не
+ * настроен или не ответил, открываем мессенджер с готовым текстом — так
+ * заявка не пропадает даже когда что-то сломалось на той стороне.
+ */
+function leadText(lead) {
+  const rows = [['Направление', lead.direction], ['Тема', lead.topic], ['Имя', lead.name],
+    ['Связь', lead.contact], ['Ниша', lead.biz], ['Что нужно', lead.pick], ['Задача', lead.msg]];
+  return ['Заявка с сайта «Один поток»', ...rows.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`)].join('\n');
+}
+
+function sendLead(lead) {
+  if (!CONTACTS.leadHook) return Promise.reject(new Error('приёмник не настроен'));
+  // text/plain — чтобы браузер не делал предварительный запрос: Apps Script
+  // на него не отвечает, и заявка бы не ушла.
+  return fetch(CONTACTS.leadHook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(lead),
+  }).then((r) => { if (!r.ok) throw new Error('приёмник ответил ' + r.status); });
+}
+
 function watchForms() {
   document.querySelectorAll('form[data-lead]').forEach((form) => {
     form.addEventListener('submit', (e) => {
@@ -375,18 +522,56 @@ function watchForms() {
         if (!String(d.get(k) || '').trim()) { el.focus(); el.style.borderColor = '#b3123c'; return; }
         el.style.borderColor = '';
       }
-      const lines = ['Заявка с сайта «Один поток»', `Тема: ${form.dataset.lead}`, `Имя: ${d.get('name')}`, `Связь: ${d.get('contact')}`];
-      if (d.get('biz')) lines.push(`Ниша: ${d.get('biz')}`);
-      if (d.get('topic')) lines.push(`Интересует: ${d.get('topic')}`);
-      if (d.get('msg')) lines.push(`Задача: ${d.get('msg')}`);
-      const text = lines.join('\n');
-      window.open(`${TG}?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
-      try { navigator.clipboard?.writeText(text); } catch { /* не критично */ }
-      const ok = form.querySelector('.form__ok');
-      if (ok) ok.style.display = 'block';
-      form.reset();
+      const lead = {
+        direction: form.dataset.direction || pageDirection(),
+        topic: form.dataset.lead,
+        name: String(d.get('name') || '').trim(),
+        contact: String(d.get('contact') || '').trim(),
+        biz: String(d.get('biz') || '').trim(),
+        pick: String(d.get('topic') || '').trim(),
+        msg: String(d.get('msg') || '').trim(),
+        page: location.pathname.split('/').pop() || 'index.html',
+        ref: document.referrer || '',
+      };
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) { btn.disabled = true; btn.dataset.was = btn.textContent; btn.textContent = 'Отправляем…'; }
+      const done = (okText, fallback) => {
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset.was || 'Оставить заявку'; }
+        const ok = form.querySelector('.form__ok');
+        if (ok) { ok.innerHTML = okText; ok.style.display = 'block'; }
+        if (fallback) window.open(msgrHref('tg', leadText(lead)), '_blank', 'noopener');
+        form.reset();
+      };
+      const ways = MESSENGERS.map((m) => `<a href="${msgrHref(m.id)}" target="_blank" rel="noopener">${esc(m.n)}</a>`).join(' · ');
+      sendLead(lead)
+        .then(() => done(`<b>Заявка у нас.</b> Ответим в течение рабочего дня. Хотите быстрее — напишите: ${ways}`, false))
+        .catch(() => {
+          try { navigator.clipboard?.writeText(leadText(lead)); } catch { /* не критично */ }
+          done('Открылся мессенджер с вашей заявкой — отправьте сообщение. Если он не открылся, контакты в подвале.', true);
+        });
     });
   });
+}
+
+/**
+ * Связаться в один клик. На большом экране — столбик у правого края,
+ * на телефоне — полоса внизу: там до неё дотягивается большой палец.
+ * Трубка подмигивает, но редко: постоянная анимация у края экрана
+ * раздражает и читается как баннер.
+ */
+function buildReach() {
+  if (document.querySelector('.reach')) return;
+  const box = document.createElement('div');
+  box.className = 'reach';
+  const links = MESSENGERS.map((m) => `<a class="reach__i" href="${msgrHref(m.id)}" target="_blank" rel="noopener"
+      title="Написать в ${esc(m.n)}" aria-label="Написать в ${esc(m.n)}">
+      <img src="assets/logos/${m.logo}" alt="" loading="lazy" /><span class="reach__cap">${esc(m.n)}</span></a>`).join('');
+  box.innerHTML = `<a class="reach__i reach__i--call" href="${TEL}" title="Позвонить ${esc(CONTACTS.phone)}"
+      aria-label="Позвонить ${esc(CONTACTS.phone)}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6.5 3h3l1.5 4-2 1.4a12 12 0 0 0 5.6 5.6L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 3 6.2 2 2 0 0 1 5 4z"/>
+      </svg><span class="reach__cap">Позвонить</span></a>${links}`;
+  document.body.appendChild(box);
 }
 
 /* Подставляем адрес кабинета и число дней пробного периода в разметку. */
@@ -414,7 +599,9 @@ buildList('#channels', CHANNELS, (c) => `<div class="chan rise">
   <p class="chan__d">${esc(c.d)}</p>
   <div class="chan__p">${c.p ? `${money(c.p)}<i>${c.once ? 'один раз' : 'в месяц'}</i>` : 'считаем<i>под задачу</i>'}</div>
 </div>`);
+buildWorks();
 applyContacts();
+buildReach();
 watchRise();
 watchHead();
 watchForms();

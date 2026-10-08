@@ -1187,3 +1187,113 @@ a.work:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-co
 }
 .tip h3 { margin-top: 6px; font-size: 18.5px; }
 .tip p { font-size: 15.5px; color: var(--dim); line-height: 1.55; }
+
+/* ---------- связаться в один клик ---------- */
+/* На большом экране столбик у правого края, на телефоне — полоса внизу. */
+.reach { position: fixed; z-index: 60; right: 14px; top: 50%; transform: translateY(-50%); display: grid; gap: 10px; }
+.reach__i {
+  position: relative; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 16px;
+  background: #fff; box-shadow: 0 8px 24px rgba(20, 16, 48, .16), 0 0 0 1px rgba(20, 16, 48, .06);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.reach__i:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(20, 16, 48, .22), 0 0 0 1px rgba(20, 16, 48, .08); }
+.reach__i img { width: 28px; height: 28px; object-fit: contain; }
+.reach__i--call { background: var(--accent); color: #fff; }
+.reach__i--call svg { width: 24px; height: 24px; }
+/* Трубка подмигивает редко: у края экрана непрерывная пульсация читается как баннер. */
+.reach__i--call::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--accent);
+  animation: reachRing 3.6s ease-out infinite;
+}
+@keyframes reachRing {
+  0%, 72% { opacity: .55; transform: scale(1); }
+  86% { opacity: 0; transform: scale(1.45); }
+  100% { opacity: 0; transform: scale(1.45); }
+}
+/* Подпись выезжает при наведении — на холодную иконки не подписаны, чтобы не шуметь. */
+.reach__cap {
+  position: absolute; right: calc(100% + 10px); white-space: nowrap; font-size: 13.5px; font-weight: 600;
+  background: var(--ink); color: #fff; padding: 6px 11px; border-radius: 9px;
+  opacity: 0; pointer-events: none; transform: translateX(6px); transition: opacity .16s ease, transform .16s ease;
+}
+.reach__i:hover .reach__cap { opacity: 1; transform: none; }
+
+@media (max-width: 860px) {
+  .reach {
+    right: 0; left: 0; top: auto; bottom: 0; transform: none;
+    grid-auto-flow: column; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0;
+    background: rgba(255, 255, 255, .94); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line); padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    box-shadow: 0 -6px 22px rgba(20, 16, 48, .1);
+  }
+  .reach__i {
+    width: auto; height: 46px; border-radius: 13px; box-shadow: none; gap: 2px;
+    grid-auto-flow: row; align-content: center;
+  }
+  .reach__i:hover { transform: none; box-shadow: none; }
+  .reach__i img { width: 23px; height: 23px; }
+  .reach__i--call { background: var(--accent); }
+  .reach__i--call svg { width: 21px; height: 21px; }
+  .reach__cap {
+    position: static; opacity: 1; transform: none; background: none; color: var(--dim);
+    font-size: 10.5px; font-weight: 600; padding: 0; letter-spacing: .01em;
+  }
+  .reach__i--call .reach__cap { color: rgba(255, 255, 255, .9); }
+  /* Полоса перекрывает низ страницы — освобождаем место. */
+  body { padding-bottom: 78px; }
+}
+
+/* Мессенджеры в подвале. */
+.foot__msg { display: flex; gap: 10px; margin-top: 4px; }
+.foot__msg a { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: #fff; }
+.foot__msg img { width: 22px; height: 22px; object-fit: contain; }
+
+/* ---------- витрина сайтов: живые окна ---------- */
+.shw { display: grid; grid-template-columns: 300px 1fr; gap: 22px; align-items: start; }
+.shw__list { display: grid; gap: 10px; }
+.wtab {
+  display: block; width: 100%; text-align: left; cursor: pointer; font: inherit;
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px;
+  box-shadow: var(--shadow-soft); transition: border-color .16s ease, transform .16s ease;
+}
+.wtab:hover { transform: translateY(-1px); }
+.wtab.is-on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow-soft); }
+.wtab b { display: block; font-size: 16.5px; }
+.wtab span { display: block; margin-top: 3px; font-size: 13.5px; color: var(--dim); line-height: 1.45; }
+
+/* Рамка «браузера»: без неё окно читается как кусок текущей страницы. */
+.shw__stage { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; box-shadow: var(--shadow-soft); }
+.shw__bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: #fbfafe; }
+.shw__dots { display: flex; gap: 6px; flex: none; }
+.shw__dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.shw__name { font-size: 13.5px; font-weight: 600; color: var(--dim); flex: 1; min-width: 0; }
+.shw__mode { display: flex; gap: 4px; flex: none; }
+.shw__m {
+  cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--dim);
+  background: none; border: 1px solid transparent; border-radius: 8px; padding: 4px 10px;
+}
+.shw__m.is-on { background: #fff; border-color: var(--line); color: var(--ink); }
+.shw__view { position: relative; height: 620px; background: #f2f1f8; display: grid; place-items: center; }
+.shw__view--phone .shw__frame { width: 390px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.shw__frame { width: 100%; height: 100%; border: 0; background: #fff; display: block; }
+.shw__shot { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.shw__play {
+  cursor: pointer; font: inherit; font-weight: 700; font-size: 16px; color: #fff; background: var(--accent);
+  border: 0; border-radius: 999px; padding: 14px 26px; display: inline-flex; align-items: center; gap: 10px;
+}
+.shw__playi { font-size: 18px; line-height: 1; }
+.shw__note { margin: 0; padding: 12px 16px; font-size: 13.5px; color: var(--dim); line-height: 1.5; border-top: 1px solid var(--line); background: #fbfafe; }
+.shw__note b { color: var(--ink); }
+
+@media (max-width: 1000px) {
+  .shw { grid-template-columns: 1fr; }
+  .shw__list { grid-template-columns: repeat(2, 1fr); }
+  .shw__view { height: 520px; }
+}
+@media (max-width: 620px) {
+  .shw__list { grid-template-columns: 1fr; }
+  .shw__view { height: 460px; }
+  .shw__view--phone .shw__frame { width: 100%; }
+  .wtab span { display: none; }
+  .shw__name { display: none; }
+}
