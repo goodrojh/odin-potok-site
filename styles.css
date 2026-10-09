@@ -1358,3 +1358,11 @@ body.is-locked { overflow: hidden; }
   .lead-box { padding: 14px; align-items: start; }
   .lead-box__x { top: 6px; right: 6px; box-shadow: none; width: 36px; height: 36px; }
 }
+
+/* ---------- видео о работе кабинета ---------- */
+.vid { margin: clamp(26px, 3vw, 40px) 0 0; }
+.vid__v {
+  display: block; width: 100%; height: auto; border-radius: var(--radius);
+  background: #0e0b1e; box-shadow: var(--shadow); border: 1px solid var(--line);
+}
+.vid__c { margin: 12px 0 0; font-size: 14.5px; color: var(--dim); }
