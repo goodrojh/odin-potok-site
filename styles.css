@@ -756,18 +756,9 @@ img { max-width: 100%; display: block; }
   .cmp__row > .cmp__best { margin: 6px 0 0; border-radius: 10px; }
 }
 
-/* ---------- разбор: дорожка и форма ---------- */
-.path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-.path__i { position: relative; padding-top: 22px; border-top: 2px solid var(--accent-soft); }
-.path__i b { display: block; font-size: clamp(20px, 2vw, 26px); font-weight: 800; letter-spacing: -.02em; color: var(--accent); }
-.path__i span { display: block; margin-top: 6px; font-size: 15px; color: var(--dim); line-height: 1.5; }
-.leadbox {
-  background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
-  padding: clamp(24px, 3vw, 40px); display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(22px, 3vw, 48px); align-items: center;
-}
-.leadbox h3 { font-size: clamp(21px, 2vw, 27px); }
-@media (max-width: 860px) { .path { grid-template-columns: 1fr 1fr; } .leadbox { grid-template-columns: 1fr; } }
-@media (max-width: 520px) { .path { grid-template-columns: 1fr; } }
+/* Блок «разбор» переделан в .audit, а его правила .path и .leadbox
+   остались и перебивали нумерованный путь на странице платформы —
+   удалены. */
 
 /* ---------- калькулятор: ползунки ---------- */
 .calc__f input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; padding: 0; height: 24px; border: 0; }
@@ -830,9 +821,9 @@ img { max-width: 100%; display: block; }
 }
 
 /* ---------- схема «как обычно / как у нас» ---------- */
-.dg { margin: 22px 0 6px; }
-.dg__row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-.dg__chip { display: grid; justify-items: center; gap: 6px; }
+/* Прежняя схема на пять площадок удалена: её правила перебивались
+   следующим блоком и только путали. */
+
 .dg__chip img { width: 34px; height: 34px; object-fit: contain; padding: 7px; background: #fff; border-radius: 13px; box-shadow: 0 0 0 1px var(--line), 0 6px 14px rgba(21,18,42,.06); box-sizing: content-box; }
 .dg__chip i { font-style: normal; font-size: 11.5px; color: var(--dim); font-weight: 600; text-align: center; }
 
@@ -1171,13 +1162,15 @@ a.work:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-co
 }
 
 /* ---------- план на месяц ---------- */
-.plan { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-.plan__i { padding-top: 20px; border-top: 2px solid var(--accent-soft); }
-.plan__w { display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
-.plan__i b { display: block; margin: 8px 0 6px; font-size: 18px; }
-.plan__i > span:last-child { display: block; font-size: 15px; color: var(--dim); line-height: 1.55; }
-@media (max-width: 900px) { .plan { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 560px) { .plan { grid-template-columns: 1fr; } }
+/* Имя своё, не .plan: так назывались карточки тарифов платформы, и
+   сетка из четырёх колонок разложила их содержимое в строку. */
+.wplan { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.wplan__i { padding-top: 20px; border-top: 2px solid var(--accent-soft); }
+.wplan__w { display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+.wplan__i b { display: block; margin: 8px 0 6px; font-size: 18px; }
+.wplan__i > span:last-child { display: block; font-size: 15px; color: var(--dim); line-height: 1.55; }
+@media (max-width: 900px) { .wplan { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .wplan { grid-template-columns: 1fr; } }
 
 /* ---------- советы ---------- */
 .tip { position: relative; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 22px 22px; box-shadow: var(--shadow-soft); }
